@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact | We Services LLC</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container row">
+      <div class="brand">
+        <div class="brand-badge">WE</div>
+        <div>
+          <h1>We Services LLC</h1>
+          <small>Anything you need we can provide</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="about.html">About</a>
+        <a class="active" href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <h3>Contact</h3>
+
+      <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="card">
+          <h4 style="margin-top:0;">Business Contact</h4>
+          <p class="note"><strong>Willie Evans</strong> • <strong>Jazmine Evans</strong></p>
+          <p class="note">
+            Email: <strong>weservices2022@gmail.com</strong>
+            <button class="button" style="padding:8px 10px; margin-left:8px;" onclick="copyEmail()" type="button">
+              Copy
+            </button>
+          </p>
+          <hr class="hr" />
+          <p class="note"><strong>Price:</strong> $50 per consultation</p>
+          <p class="note">Use the form to request a consultation and we’ll follow up by email.</p>
+        </div>
+
+        <div class="card">
+          <h4 style="margin-top:0;">Request a Consultation</h4>
+
+          <!-- Replace ACTION_URL with a Formspree/Getform endpoint when ready -->
+          <form class="form" action="ACTION_URL" method="POST">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" required placeholder="Your full name" />
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+            <label for="service">Service Interested In</label>
+            <input id="service" name="service" type="text" placeholder="Security, Business, Couples, Sports, Education, Event" />
+
+            <label for="message">Details</label>
+            <textarea id="message" name="message" rows="5" required placeholder="Tell us what you need and your timeline."></textarea>
+
+            <button class="button primary" type="submit">Send Request</button>
+            <p class="note">To make this form work on GitHub Pages, use Formspree or a Google Form link.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <small>© 2026 We Services LLC</small>
+    </div>
+  </footer>
+</body>
+</html>
