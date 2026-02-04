@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Service | We Services LLC</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container row">
+      <div class="brand">
+        <img class="brand-logo" src="logo.png" alt="We Services LLC logo">
+        <div class="brand-badge">WE</div>
+        <div>
+          <h1>We Services LLC</h1>
+          <small>We make things happen</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="about.html">About</a>
+        <a class="active" href="book.html">Book</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <h3>Request a Booking</h3>
+      <p class="note">
+        Fill this out to request a date/time between <strong>8:00 AM</strong> and <strong>5:00 PM</strong>.
+        We will confirm by email.
+      </p>
+
+      <div class="card">
+        <!-- IMPORTANT:
+          GitHub Pages can't send forms by itself.
+          Option A (simple): change action to a form provider endpoint (Formspree/Getform).
+          Option B: keep as "mailto:" (opens user's email client).
+        -->
+
+        <!-- A) Mailto fallback (works immediately, not perfect) -->
+        <form id="bookingForm" class="form" action="mailto:weservices2022@gmail.com" method="POST" enctype="text/plain">
+          <label for="name">Name</label>
+          <input id="name" name="Name" type="text" required placeholder="Your full name" />
+
+          <label for="date">Date</label>
+          <input id="date" name="Date" type="date" required />
+
+          <label for="time">Time (8:00 AM – 5:00 PM)</label>
+          <select id="time" name="Time" required></select>
+
+          <label for="service">Service Requested</label>
+          <select id="service" name="Service" required>
+            <option value="Security Consulting">Security Consulting</option>
+            <option value="Business Consulting">Business Consulting</option>
+            <option value="Couples Consulting">Couples Consulting</option>
+            <option value="Sports Consulting">Sports Consulting</option>
+            <option value="Educational Consulting">Educational Consulting</option>
+            <option value="Event Consulting">Event Consulting</option>
+            <option value="Web Design">Web Design</option>
+          </select>
+
+          <label for="serviceOther">Details (optional)</label>
+          <textarea id="serviceOther" name="Details" rows="4" placeholder="Add any notes, goals, or special requests."></textarea>
+
+          <button class="button primary" type="submit">Submit Request</button>
+
+          <p class="note" style="margin-top:10px;">
+            Note: This form currently opens your email app to send the request.
+            If you want the form to submit automatically (no email app), tell me if you want
+            Formspree or a Google Form and I’ll wire it up.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <small>© 2026 We Services LLC</small>
+    </div>
+  </footer>
+</body>
+</html>
