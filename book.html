@@ -33,31 +33,77 @@
     <div class="container">
       <h3>Booking Request</h3>
       <p class="note">
-        Submit your request below. Available booking times are <strong>10:00 AM – 8:00 PM</strong>.
-        Requests are confirmed by email.
+        Please complete the form below to request a consultation.
+        Available booking times are <strong>10:00 AM – 8:00 PM</strong>.
+        Requests are reviewed and confirmed via email.
       </p>
 
       <div class="card">
-        <!-- GitHub Pages cannot process forms by itself.
-             This mailto fallback opens the user's email client with the request. -->
-        <form id="bookingForm" class="form" action="mailto:weservices2022@gmail.com" method="POST" enctype="text/plain">
+        <!--
+          IMPORTANT:
+          Replace YOUR_FORM_ID with your actual Formspree form ID.
+          Example:
+          https://formspree.io/f/xoqgabcd
+        -->
+        <form
+          id="bookingForm"
+          class="form"
+          method="POST"
+          action="https://formspree.io/f/YOUR_FORM_ID"
+        >
+          <!-- Formspree helpers -->
+          <input type="hidden" name="_subject" value="New Booking Request - We Services LLC" />
+          <input type="hidden" name="_format" value="plain" />
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
           <label for="name">Full Name</label>
-          <input id="name" name="Full Name" type="text" required placeholder="Your full name" />
+          <input
+            id="name"
+            name="Full Name"
+            type="text"
+            required
+            placeholder="Your full name"
+          />
 
           <label for="email">Email Address</label>
-          <input id="email" name="Email" type="email" required placeholder="you@example.com" />
+          <input
+            id="email"
+            name="Email"
+            type="email"
+            required
+            placeholder="you@example.com"
+          />
 
           <label for="phone">Phone Number</label>
-          <input id="phone" name="Phone" type="tel" required placeholder="(555) 555-5555" />
+          <input
+            id="phone"
+            name="Phone"
+            type="tel"
+            required
+            placeholder="(555) 555-5555"
+          />
 
           <label for="date">Preferred Date</label>
-          <input id="date" name="Preferred Date" type="date" required />
+          <input
+            id="date"
+            name="Preferred Date"
+            type="date"
+            required
+          />
 
           <label for="time">Preferred Time (10:00 AM – 8:00 PM)</label>
-          <select id="time" name="Preferred Time" required></select>
+          <select
+            id="time"
+            name="Preferred Time"
+            required
+          ></select>
 
           <label for="service">Service Requested</label>
-          <select id="service" name="Service Requested" required>
+          <select
+            id="service"
+            name="Service Requested"
+            required
+          >
             <option value="Security Consulting">Security Consulting</option>
             <option value="Business Consulting">Business Consulting</option>
             <option value="Couples Consulting">Couples Consulting</option>
@@ -68,15 +114,22 @@
           </select>
 
           <label for="details">Additional Details (optional)</label>
-          <textarea id="details" name="Additional Details" rows="5" placeholder="Describe what you need, goals, and any timeline."></textarea>
+          <textarea
+            id="details"
+            name="Additional Details"
+            rows="5"
+            placeholder="Please describe your needs, goals, or any relevant details."
+          ></textarea>
 
-          <button class="button primary" type="submit">Submit Request</button>
+          <button class="button primary" type="submit">
+            Submit Booking Request
+          </button>
 
-          <p class="note" style="margin-top:10px;">
-            Note: This form currently opens your email app to send the request.
-            If you want this to behave exactly like Google Forms (submit without opening email),
-            tell me if you prefer Formspree or a Google Form and I’ll wire it up with full code.
-          </p>
+          <p
+            id="formStatus"
+            class="note"
+            style="margin-top:10px; display:none;"
+          ></p>
         </form>
       </div>
     </div>
