@@ -31,32 +31,33 @@
 
   <section class="section">
     <div class="container">
-      <h3>Request a Booking</h3>
+      <h3>Booking Request</h3>
       <p class="note">
-        Fill this out to request a date/time between <strong>8:00 AM</strong> and <strong>5:00 PM</strong>.
-        We will confirm by email.
+        Submit your request below. Available booking times are <strong>10:00 AM – 8:00 PM</strong>.
+        Requests are confirmed by email.
       </p>
 
       <div class="card">
-        <!-- IMPORTANT:
-          GitHub Pages can't send forms by itself.
-          Option A (simple): change action to a form provider endpoint (Formspree/Getform).
-          Option B: keep as "mailto:" (opens user's email client).
-        -->
-
-        <!-- A) Mailto fallback (works immediately, not perfect) -->
+        <!-- GitHub Pages cannot process forms by itself.
+             This mailto fallback opens the user's email client with the request. -->
         <form id="bookingForm" class="form" action="mailto:weservices2022@gmail.com" method="POST" enctype="text/plain">
-          <label for="name">Name</label>
-          <input id="name" name="Name" type="text" required placeholder="Your full name" />
+          <label for="name">Full Name</label>
+          <input id="name" name="Full Name" type="text" required placeholder="Your full name" />
 
-          <label for="date">Date</label>
-          <input id="date" name="Date" type="date" required />
+          <label for="email">Email Address</label>
+          <input id="email" name="Email" type="email" required placeholder="you@example.com" />
 
-          <label for="time">Time (8:00 AM – 5:00 PM)</label>
-          <select id="time" name="Time" required></select>
+          <label for="phone">Phone Number</label>
+          <input id="phone" name="Phone" type="tel" required placeholder="(555) 555-5555" />
+
+          <label for="date">Preferred Date</label>
+          <input id="date" name="Preferred Date" type="date" required />
+
+          <label for="time">Preferred Time (10:00 AM – 8:00 PM)</label>
+          <select id="time" name="Preferred Time" required></select>
 
           <label for="service">Service Requested</label>
-          <select id="service" name="Service" required>
+          <select id="service" name="Service Requested" required>
             <option value="Security Consulting">Security Consulting</option>
             <option value="Business Consulting">Business Consulting</option>
             <option value="Couples Consulting">Couples Consulting</option>
@@ -66,15 +67,15 @@
             <option value="Web Design">Web Design</option>
           </select>
 
-          <label for="serviceOther">Details (optional)</label>
-          <textarea id="serviceOther" name="Details" rows="4" placeholder="Add any notes, goals, or special requests."></textarea>
+          <label for="details">Additional Details (optional)</label>
+          <textarea id="details" name="Additional Details" rows="5" placeholder="Describe what you need, goals, and any timeline."></textarea>
 
           <button class="button primary" type="submit">Submit Request</button>
 
           <p class="note" style="margin-top:10px;">
             Note: This form currently opens your email app to send the request.
-            If you want the form to submit automatically (no email app), tell me if you want
-            Formspree or a Google Form and I’ll wire it up.
+            If you want this to behave exactly like Google Forms (submit without opening email),
+            tell me if you prefer Formspree or a Google Form and I’ll wire it up with full code.
           </p>
         </form>
       </div>
