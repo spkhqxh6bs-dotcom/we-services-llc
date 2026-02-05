@@ -6,25 +6,25 @@ function copyEmail() {
 }
 
 /**
- * Builds time options from 8:00 AM to 5:00 PM (inclusive)
- * in 15-minute increments by default.
+ * Builds time options between startHour and endHour (inclusive) in stepMinutes increments.
+ * Example: 10 AM to 8 PM (20:00).
  */
-function buildTimeOptions(selectEl, startHour = 8, endHour = 17, stepMinutes = 15) {
+function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
 
-  // Clear existing options
   selectEl.innerHTML = "";
 
   const pad = (n) => String(n).padStart(2, "0");
 
   for (let hour = startHour; hour <= endHour; hour++) {
     for (let min = 0; min < 60; min += stepMinutes) {
-      // Stop exactly at 5:00 PM (17:00) and don't go beyond
+      // Stop exactly at the final hour (e.g., 20:00) and do not go past it
       if (hour === endHour && min > 0) break;
 
       const isPM = hour >= 12;
       const displayHour = ((hour + 11) % 12) + 1;
       const displayMin = pad(min);
+
       const label = `${displayHour}:${displayMin} ${isPM ? "PM" : "AM"}`;
       const value = `${pad(hour)}:${pad(min)}`;
 
@@ -45,7 +45,6 @@ function applyServiceFromQuery(selectEl) {
   const service = params.get("service");
   if (!service) return;
 
-  // Attempt to match option by value
   const found = [...selectEl.options].some(opt => {
     if (opt.value === service) {
       selectEl.value = service;
@@ -54,9 +53,9 @@ function applyServiceFromQuery(selectEl) {
     return false;
   });
 
-  // If not found, place it in the "Other" field if present
-  const otherField = document.getElementById("serviceOther");
-  if (!found && otherField) otherField.value = service;
+  // If the service isn't found, drop it into Details box
+  const detailsField = document.getElementById("details");
+  if (!found && detailsField) detailsField.value = `Requested service: ${service}\n`;
 }
 
 /**
@@ -66,7 +65,8 @@ function initBookingForm() {
   const timeSelect = document.getElementById("time");
   const serviceSelect = document.getElementById("service");
 
-  buildTimeOptions(timeSelect, 8, 17, 15);
+  // UPDATED: 10 AM (10) to 8 PM (20)
+  buildTimeOptions(timeSelect, 10, 20, 15);
   applyServiceFromQuery(serviceSelect);
 
   // Set min date to today
@@ -81,7 +81,6 @@ function initBookingForm() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Only runs on the booking page when those elements exist
   if (document.getElementById("bookingForm")) {
     initBookingForm();
   }
