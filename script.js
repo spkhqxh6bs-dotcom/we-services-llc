@@ -1,10 +1,3 @@
-function copyEmail() {
-  const emails = "wevans@weservicesllc.biz, jevans@weservicesllc.biz";
-  navigator.clipboard.writeText(emails).then(() => {
-    alert("Copied: " + emails);
-  });
-}
-
 function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
 
@@ -90,7 +83,7 @@ function wireBookingFormSubmit() {
       } else {
         status.textContent = "Submission failed. Please try again.";
       }
-    } catch (err) {
+    } catch {
       status.textContent = "Submission failed (network error). Please try again.";
     }
   });
