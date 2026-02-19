@@ -39,13 +39,8 @@
       </p>
 
       <div class="card">
-        <!-- Replace YOUR_FORM_ID with your real Formspree ID -->
-        <form
-          id="bookingForm"
-          class="form"
-          method="POST"
-          action="https://formspree.io/f/YOUR_FORM_ID"
-        >
+        <!-- Replace YOUR_FORM_ID with your real Formspree endpoint id -->
+        <form id="bookingForm" class="form" method="POST" action="https://formspree.io/f/YOUR_FORM_ID">
           <input type="hidden" name="_subject" value="New Booking Request - We Services LLC" />
           <input type="hidden" name="_format" value="plain" />
           <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
@@ -77,12 +72,8 @@
           </select>
 
           <label for="details">Additional Details (optional)</label>
-          <textarea
-            id="details"
-            name="Additional Details"
-            rows="5"
-            placeholder="Please describe your needs, goals, or any relevant details."
-          ></textarea>
+          <textarea id="details" name="Additional Details" rows="5"
+            placeholder="Please describe your needs, goals, or any relevant details."></textarea>
 
           <button class="button primary" type="submit">Submit Booking Request</button>
 
@@ -93,7 +84,7 @@
 
         <h3 style="margin:0 0 10px 0;">Payment</h3>
         <p class="note" style="margin-top:0;">
-          Payments are accepted via Cash App.
+          Pay securely via Cash App:
         </p>
         <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
           Pay with Cash App
