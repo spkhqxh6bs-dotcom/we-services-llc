@@ -21,24 +21,6 @@ function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   }
 }
 
-function applyServiceFromQuery(selectEl) {
-  if (!selectEl) return;
-  const params = new URLSearchParams(window.location.search);
-  const service = params.get("service");
-  if (!service) return;
-
-  const found = [...selectEl.options].some(opt => {
-    if (opt.value === service) {
-      selectEl.value = service;
-      return true;
-    }
-    return false;
-  });
-
-  const detailsField = document.getElementById("details");
-  if (!found && detailsField) detailsField.value = `Requested service: ${service}\n`;
-}
-
 function setMinDate() {
   const dateEl = document.getElementById("date");
   if (!dateEl) return;
@@ -48,6 +30,32 @@ function setMinDate() {
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
   dateEl.min = `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Reads ?service= from URL and selects it if it's in the dropdown.
+ * If not found, it inserts into the details box.
+ */
+function applyServiceFromQuery(selectEl) {
+  if (!selectEl) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const service = params.get("service");
+  if (!service) return;
+
+  let matched = false;
+  for (const opt of selectEl.options) {
+    if (opt.value === service) {
+      selectEl.value = service;
+      matched = true;
+      break;
+    }
+  }
+
+  if (!matched) {
+    const detailsField = document.getElementById("details");
+    if (detailsField) detailsField.value = `Requested service: ${service}\n` + (detailsField.value || "");
+  }
 }
 
 function wireBookingFormSubmit() {
@@ -70,6 +78,7 @@ function wireBookingFormSubmit() {
 
     try {
       const formData = new FormData(form);
+
       const res = await fetch(action, {
         method: "POST",
         body: formData,
@@ -78,12 +87,15 @@ function wireBookingFormSubmit() {
 
       if (res.ok) {
         form.reset();
+
+        // rebuild times after reset clears select
         buildTimeOptions(document.getElementById("time"), 10, 20, 15);
+
         status.textContent = "Request submitted successfully. You’ll receive a confirmation by email.";
       } else {
         status.textContent = "Submission failed. Please try again.";
       }
-    } catch {
+    } catch (err) {
       status.textContent = "Submission failed (network error). Please try again.";
     }
   });
@@ -92,8 +104,8 @@ function wireBookingFormSubmit() {
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("bookingForm")) {
     buildTimeOptions(document.getElementById("time"), 10, 20, 15);
-    applyServiceFromQuery(document.getElementById("service"));
     setMinDate();
+    applyServiceFromQuery(document.getElementById("service"));
     wireBookingFormSubmit();
   }
 });
