@@ -39,71 +39,34 @@
       </p>
 
       <div class="card">
-        <!--
-          IMPORTANT:
-          Replace YOUR_FORM_ID with your actual Formspree form ID.
-          Example:
-          https://formspree.io/f/xoqgabcd
-        -->
+        <!-- Replace YOUR_FORM_ID with your real Formspree ID -->
         <form
           id="bookingForm"
           class="form"
           method="POST"
           action="https://formspree.io/f/YOUR_FORM_ID"
         >
-          <!-- Formspree helpers -->
           <input type="hidden" name="_subject" value="New Booking Request - We Services LLC" />
           <input type="hidden" name="_format" value="plain" />
           <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
 
           <label for="name">Full Name</label>
-          <input
-            id="name"
-            name="Full Name"
-            type="text"
-            required
-            placeholder="Your full name"
-          />
+          <input id="name" name="Full Name" type="text" required placeholder="Your full name" />
 
           <label for="email">Email Address</label>
-          <input
-            id="email"
-            name="Email"
-            type="email"
-            required
-            placeholder="you@example.com"
-          />
+          <input id="email" name="Email" type="email" required placeholder="you@example.com" />
 
           <label for="phone">Phone Number</label>
-          <input
-            id="phone"
-            name="Phone"
-            type="tel"
-            required
-            placeholder="(555) 555-5555"
-          />
+          <input id="phone" name="Phone" type="tel" required placeholder="(555) 555-5555" />
 
           <label for="date">Preferred Date</label>
-          <input
-            id="date"
-            name="Preferred Date"
-            type="date"
-            required
-          />
+          <input id="date" name="Preferred Date" type="date" required />
 
           <label for="time">Preferred Time (10:00 AM – 8:00 PM)</label>
-          <select
-            id="time"
-            name="Preferred Time"
-            required
-          ></select>
+          <select id="time" name="Preferred Time" required></select>
 
           <label for="service">Service Requested</label>
-          <select
-            id="service"
-            name="Service Requested"
-            required
-          >
+          <select id="service" name="Service Requested" required>
             <option value="Security Consulting">Security Consulting</option>
             <option value="Business Consulting">Business Consulting</option>
             <option value="Couples Consulting">Couples Consulting</option>
@@ -121,16 +84,20 @@
             placeholder="Please describe your needs, goals, or any relevant details."
           ></textarea>
 
-          <button class="button primary" type="submit">
-            Submit Booking Request
-          </button>
+          <button class="button primary" type="submit">Submit Booking Request</button>
 
-          <p
-            id="formStatus"
-            class="note"
-            style="margin-top:10px; display:none;"
-          ></p>
+          <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
         </form>
+
+        <hr class="hr" />
+
+        <h3 style="margin:0 0 10px 0;">Payment</h3>
+        <p class="note" style="margin-top:0;">
+          Payments are accepted via Cash App.
+        </p>
+        <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
+          Pay with Cash App
+        </a>
       </div>
     </div>
   </section>
