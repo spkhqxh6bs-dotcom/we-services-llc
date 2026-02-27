@@ -38,7 +38,6 @@
       </p>
 
       <div class="card">
-        <!-- If you are using Google Drive routing (Apps Script), keep this as a regular form (no action). -->
         <form id="bookingForm" class="form">
           <label for="name">Full Name</label>
           <input id="name" name="name" type="text" required placeholder="Your full name" />
@@ -71,22 +70,22 @@
             <option value="Web Design">Web Design</option>
           </select>
 
-          <!-- NEW: Service-specific questions display -->
-          <div style="margin-top:12px;">
+          <!-- DYNAMIC INTAKE QUESTIONS (AUTO-UPDATES BASED ON SERVICE) -->
+          <div style="margin-top:14px;">
             <div class="tag">Service Intake Questions</div>
             <p class="note" style="margin-top:0;">
-              Please answer the questions below for your selected service.
+              These questions update automatically based on the service you choose. Please answer them below.
             </p>
 
             <ul id="intakeList" class="note" style="margin:0; padding-left:18px;"></ul>
 
-            <label for="intakeAnswers">Your Answers</label>
+            <label for="intakeAnswers">Your Answers (required)</label>
             <textarea
               id="intakeAnswers"
               name="intakeAnswers"
-              rows="7"
-              placeholder="Type your answers here (numbered is best)."
+              rows="8"
               required
+              placeholder="Answer the questions above. Numbered answers work best (1, 2, 3…)."
             ></textarea>
           </div>
 
@@ -98,41 +97,21 @@
             placeholder="Any extra details that would help us prepare."
           ></textarea>
 
-          <hr class="hr" />
-
-          <!-- NEW: Payment gate -->
-          <h3 style="margin:0 0 10px 0;">Payment Required</h3>
-          <p class="note" style="margin-top:0;">
-            To confirm your booking, please submit payment via Cash App:
-            <strong>$jazeminemichae</strong>
-          </p>
-
-          <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
-            Pay with Cash App
-          </a>
-
-          <label for="cashappTxn" style="margin-top:12px;">
-            Cash App Payment Confirmation (Transaction ID / Reference)
-          </label>
-          <input
-            id="cashappTxn"
-            name="cashappTxn"
-            type="text"
-            placeholder="Paste your Cash App transaction ID or reference"
-            required
-          />
-
-          <label style="margin-top:12px;">
-            <input id="paidCheck" type="checkbox" required style="transform:scale(1.1); margin-right:8px;">
-            I confirm I have sent the required payment via Cash App to <strong>$jazeminemichae</strong>.
-          </label>
-
-          <button class="button primary" type="submit" id="submitBtn">
-            Submit Booking Request
-          </button>
+          <button class="button primary" type="submit">Submit Booking Request</button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
         </form>
+
+        <hr class="hr" />
+
+        <h3 style="margin:0 0 10px 0;">Payment</h3>
+        <p class="note" style="margin-top:0;">
+          Pay securely via Cash App:
+          <strong>$jazeminemichae</strong>
+        </p>
+        <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
+          Pay with Cash App
+        </a>
       </div>
     </div>
   </section>
