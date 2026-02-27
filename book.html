@@ -85,11 +85,11 @@
 
             <div
               id="intakePanel"
-              style="display:none; margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
+              hidden
+              style="margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
             >
               <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
 
-              <!-- Questions generate here -->
               <div id="intakeFields"></div>
 
               <button type="button" id="saveIntakeBtn" class="button primary" style="margin-top:8px;">
@@ -109,7 +109,6 @@
                 Intake Completed (Required before booking submission)
               </label>
 
-              <!-- Hidden value included in payload -->
               <input type="hidden" id="intakeCompletedHidden" name="intakeCompletedHidden" value="false" />
             </div>
           </div>
@@ -124,7 +123,7 @@
 
           <hr class="hr" />
 
-          <!-- PAYMENT REQUIRED (attestation gate) -->
+          <!-- PAYMENT REQUIRED -->
           <h3 style="margin:0 0 10px 0;">Payment Required</h3>
           <p class="note" style="margin-top:0;">
             To confirm your booking request, please send payment via Cash App:
@@ -162,6 +161,11 @@
           </button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
+
+          <!-- Debug indicator (tiny) -->
+          <small id="jsLoaded" class="note" style="display:block; margin-top:10px; opacity:0.65;">
+            JavaScript status: loading…
+          </small>
         </form>
       </div>
     </div>
