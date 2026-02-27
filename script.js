@@ -1,3 +1,72 @@
+// If you're using the Google Drive (Apps Script) submission endpoint, paste it here.
+// If you are NOT using it, you can leave it blank and I’ll adjust to Formspree.
+const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
+
+// ---- SERVICE-SPECIFIC INTAKE QUESTIONS ----
+const SERVICE_QUESTIONS = {
+  "Security Consulting": [
+    "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
+    "Is this proactive planning or a response to an incident?",
+    "What concerns are most important to you right now?",
+    "Are there any current vulnerabilities or known risks?"
+  ],
+  "Business Consulting": [
+    "What type of business do you operate?",
+    "What stage is your business in (startup, growing, established, struggling)?",
+    "What specific area needs improvement (marketing, operations, staffing, finances, strategy)?",
+    "What outcome would make this session successful?"
+  ],
+  "Couples Consulting": [
+    "What is the main challenge you’d like to address?",
+    "How long has this issue been present?",
+    "Are both parties attending the consultation?",
+    "Are you seeking communication improvement, conflict resolution, goal alignment, or pre-marital planning?"
+  ],
+  "Sports Consulting": [
+    "What sport is this for?",
+    "What is the athlete’s age and current level (recreational, school, collegiate, professional)?",
+    "What area needs improvement (performance, mindset, recruiting, training structure)?",
+    "What is your goal timeline (next game/season/tryout/date)?"
+  ],
+  "Educational Consulting": [
+    "What is the student’s grade level?",
+    "What are the primary academic concerns or goals?",
+    "Is this for tutoring strategy, academic planning, or career planning?",
+    "Are there IEP/504 plans involved (yes/no)?"
+  ],
+  "Event Consulting": [
+    "What type of event is it?",
+    "What is the expected guest count?",
+    "What is the event date and location?",
+    "What is your budget range and what level of help do you need (decor, coordination, full planning)?"
+  ],
+  "AI Consulting": [
+    "What industry are you in?",
+    "What problem are you trying to solve with AI?",
+    "Are you looking for automation, content generation, data analysis, or workflow improvement?",
+    "What tools are you currently using (if any)?"
+  ],
+  "Real Estate Consulting": [
+    "Are you a buyer, seller, or investor?",
+    "Residential or commercial?",
+    "What is your timeline (e.g., 30/60/90 days)?",
+    "What is your budget range and are you a first-time buyer/investor (yes/no)?"
+  ],
+  "Art Consulting": [
+    "Are you an artist or collector?",
+    "What medium (painting, digital, sculpture, etc.)?",
+    "Are you seeking branding, exhibition planning, sales strategy, or portfolio review?",
+    "Do you currently have an online presence (yes/no)?"
+  ],
+  "Web Design": [
+    "Is this a new website or a redesign?",
+    "Do you already own a domain name and hosting (yes/no)?",
+    "What features do you need (booking, payments, portfolio, e-commerce, etc.)?",
+    "What is your target launch date and any example sites you like?"
+  ]
+};
+
+// ---- UTILITIES ----
 function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
 
@@ -32,33 +101,50 @@ function setMinDate() {
   dateEl.min = `${yyyy}-${mm}-${dd}`;
 }
 
-/**
- * Reads ?service= from URL and selects it if it's in the dropdown.
- * If not found, it inserts into the details box.
- */
 function applyServiceFromQuery(selectEl) {
   if (!selectEl) return;
-
   const params = new URLSearchParams(window.location.search);
   const service = params.get("service");
   if (!service) return;
 
-  let matched = false;
   for (const opt of selectEl.options) {
     if (opt.value === service) {
       selectEl.value = service;
-      matched = true;
       break;
     }
   }
+}
 
-  if (!matched) {
-    const detailsField = document.getElementById("details");
-    if (detailsField) detailsField.value = `Requested service: ${service}\n` + (detailsField.value || "");
+function renderIntakeQuestions(service) {
+  const list = document.getElementById("intakeList");
+  const answers = document.getElementById("intakeAnswers");
+  if (!list || !answers) return;
+
+  const qs = SERVICE_QUESTIONS[service] || [];
+  list.innerHTML = "";
+
+  qs.forEach((q, idx) => {
+    const li = document.createElement("li");
+    li.textContent = `${idx + 1}. ${q}`;
+    list.appendChild(li);
+  });
+
+  // Helpful prompt (does not overwrite if user already typed)
+  if (!answers.value.trim()) {
+    answers.placeholder = "Type your answers here (numbered is best).";
   }
 }
 
-function wireBookingFormSubmit() {
+function paymentGateOk() {
+  const paidCheck = document.getElementById("paidCheck");
+  const cashappTxn = document.getElementById("cashappTxn");
+  if (!paidCheck || !cashappTxn) return false;
+
+  return paidCheck.checked && cashappTxn.value.trim().length >= 4;
+}
+
+// ---- SUBMIT TO GOOGLE DRIVE (Apps Script) ----
+function wireBookingToGoogleDrive() {
   const form = document.getElementById("bookingForm");
   const status = document.getElementById("formStatus");
   if (!form || !status) return;
@@ -66,32 +152,51 @@ function wireBookingFormSubmit() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const action = form.getAttribute("action") || "";
-    if (action.includes("YOUR_FORM_ID")) {
+    // PAYMENT GATE (cannot truly verify Cash App; this is user-provided confirmation)
+    if (!paymentGateOk()) {
       status.style.display = "block";
-      status.textContent = "Form is not connected yet. Replace YOUR_FORM_ID in book.html with your Formspree form ID.";
+      status.textContent = "Payment confirmation is required. Please enter your Cash App transaction/reference and check the confirmation box.";
+      return;
+    }
+
+    // If you're not using Drive submission, stop here (tell me and I’ll switch to Formspree).
+    if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
+      status.style.display = "block";
+      status.textContent = "Booking system is not connected yet. Add your Google Web App URL in script.js.";
       return;
     }
 
     status.style.display = "block";
     status.textContent = "Submitting your request…";
 
-    try {
-      const formData = new FormData(form);
+    const payload = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      date: document.getElementById("date").value,
+      time: document.getElementById("time").value,
+      service: document.getElementById("service").value,
+      intakeAnswers: document.getElementById("intakeAnswers").value.trim(),
+      details: document.getElementById("details").value.trim(),
+      cashappTxn: document.getElementById("cashappTxn").value.trim(),
+      paidConfirmed: document.getElementById("paidCheck").checked
+    };
 
-      const res = await fetch(action, {
+    try {
+      const res = await fetch(GOOGLE_WEB_APP_URL, {
         method: "POST",
-        body: formData,
-        headers: { "Accept": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
 
-      if (res.ok) {
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data && data.ok) {
         form.reset();
-
-        // rebuild times after reset clears select
         buildTimeOptions(document.getElementById("time"), 10, 20, 15);
-
-        status.textContent = "Request submitted successfully. You’ll receive a confirmation by email.";
+        setMinDate();
+        renderIntakeQuestions(document.getElementById("service").value);
+        status.textContent = "Request submitted successfully. Thank you!";
       } else {
         status.textContent = "Submission failed. Please try again.";
       }
@@ -102,10 +207,21 @@ function wireBookingFormSubmit() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const serviceSelect = document.getElementById("service");
+
   if (document.getElementById("bookingForm")) {
     buildTimeOptions(document.getElementById("time"), 10, 20, 15);
     setMinDate();
-    applyServiceFromQuery(document.getElementById("service"));
-    wireBookingFormSubmit();
+    applyServiceFromQuery(serviceSelect);
+
+    // Render initial questions
+    renderIntakeQuestions(serviceSelect.value);
+
+    // Update questions when service changes
+    serviceSelect.addEventListener("change", () => {
+      renderIntakeQuestions(serviceSelect.value);
+    });
+
+    wireBookingToGoogleDrive();
   }
 });
