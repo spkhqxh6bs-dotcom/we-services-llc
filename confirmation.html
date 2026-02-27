@@ -5,20 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Booking Submitted | We Services LLC</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer>
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const name = params.get("name") || "Customer";
-      const service = params.get("service") || "Selected Service";
-      const date = params.get("date") || "Selected Date";
-      const time = params.get("time") || "Selected Time";
-
-      document.getElementById("cName").textContent = name;
-      document.getElementById("cService").textContent = service;
-      document.getElementById("cDate").textContent = date;
-      document.getElementById("cTime").textContent = time;
-    });
-  </script>
 </head>
 <body>
   <header class="topbar">
@@ -47,23 +33,12 @@
       <div class="card">
         <h3>Booking Submitted</h3>
         <p class="note">
-          Thank you, <strong id="cName">Customer</strong>. Your booking request has been submitted successfully.
+          Thank you. Your booking request has been submitted successfully.
         </p>
-
         <hr class="hr" />
-
-        <p class="note" style="margin:0;">
-          <strong>Service:</strong> <span id="cService"></span><br />
-          <strong>Date:</strong> <span id="cDate"></span><br />
-          <strong>Time:</strong> <span id="cTime"></span>
-        </p>
-
-        <hr class="hr" />
-
         <p class="note">
-          We will review your request and follow up with confirmation details.
+          If you do not receive a response, please contact us using the email listed on the Contact page.
         </p>
-
         <a class="button primary" href="book.html">Submit Another Booking</a>
       </div>
     </div>
