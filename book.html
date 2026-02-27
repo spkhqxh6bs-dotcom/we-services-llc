@@ -38,7 +38,20 @@
       </p>
 
       <div class="card">
-        <form id="bookingForm" class="form" novalidate>
+        <!-- ✅ Native Formspree submit -->
+        <form
+          id="bookingForm"
+          class="form"
+          action="https://formspree.io/f/mzdavobw"
+          method="POST"
+          novalidate
+        >
+          <!-- ✅ Formspree special fields -->
+          <input type="hidden" name="_subject" id="fspSubject" value="">
+          <input type="hidden" name="message" id="fspMessage" value="">
+          <input type="hidden" name="_replyto" id="fspReplyTo" value="">
+          <input type="hidden" name="_redirect" id="fspRedirect" value="confirmation.html">
+
           <label for="name">Full Name</label>
           <input id="name" name="name" type="text" required placeholder="Your full name" />
 
@@ -49,10 +62,10 @@
           <input id="phone" name="phone" type="tel" required placeholder="(555) 555-5555" />
 
           <label for="date">Preferred Date</label>
-          <input id="date" name="date" type="date" required />
+          <input id="date" name="preferred_date" type="date" required />
 
           <label for="time">Preferred Time (10:00 AM – 8:00 PM)</label>
-          <select id="time" name="time" required></select>
+          <select id="time" name="preferred_time" required></select>
 
           <label for="service">Service Requested</label>
           <select id="service" name="service" required>
@@ -89,7 +102,6 @@
               style="margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
             >
               <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
-
               <div id="intakeFields"></div>
 
               <button type="button" id="saveIntakeBtn" class="button primary" style="margin-top:8px;">
@@ -101,7 +113,7 @@
               <label style="margin-top:12px; display:block;">
                 <input
                   id="intakeCompletedCheck"
-                  name="intakeCompletedCheck"
+                  name="intake_completed_checkbox"
                   type="checkbox"
                   disabled
                   style="transform:scale(1.1); margin-right:8px;"
@@ -109,17 +121,16 @@
                 Intake Completed (Required before booking submission)
               </label>
 
-              <input type="hidden" id="intakeCompletedHidden" name="intakeCompletedHidden" value="false" />
+              <input type="hidden" id="intakeCompletedHidden" name="intake_completed" value="false" />
+
+              <!-- Hidden: we will compile all intake Q/A into this one field -->
+              <input type="hidden" id="intakeAnswersCompiled" name="intake_answers" value="">
             </div>
           </div>
 
           <label for="details">Additional Details (optional)</label>
-          <textarea
-            id="details"
-            name="details"
-            rows="5"
-            placeholder="Any extra details that would help us prepare."
-          ></textarea>
+          <textarea id="details" name="additional_details" rows="5"
+            placeholder="Any extra details that would help us prepare."></textarea>
 
           <hr class="hr" />
 
@@ -139,7 +150,7 @@
           </label>
           <input
             id="cashappConfirmation"
-            name="cashappConfirmation"
+            name="cashapp_confirmation"
             type="text"
             required
             placeholder="Example: Cash App transaction ID or note you included"
@@ -148,7 +159,7 @@
           <label style="margin-top:12px;">
             <input
               id="cashappPaidCheck"
-              name="cashappPaidCheck"
+              name="cashapp_paid_confirmed"
               type="checkbox"
               required
               style="transform:scale(1.1); margin-right:8px;"
@@ -161,7 +172,6 @@
           </button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
-
           <small id="jsLoaded" class="note" style="display:block; margin-top:10px; opacity:0.65;">
             JavaScript status: loading…
           </small>
