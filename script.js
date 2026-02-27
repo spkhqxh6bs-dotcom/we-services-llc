@@ -1,5 +1,10 @@
+// If you're using Google Drive (Apps Script) to store bookings, paste your web app URL here.
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
 
+/**
+ * Intake questions per service.
+ * Each question gets its own required answer textarea.
+ */
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -63,6 +68,8 @@ const SERVICE_QUESTIONS = {
   ]
 };
 
+function $(id) { return document.getElementById(id); }
+
 function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
 
@@ -87,7 +94,7 @@ function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
 }
 
 function setMinDate() {
-  const dateEl = document.getElementById("date");
+  const dateEl = $("date");
   if (!dateEl) return;
 
   const today = new Date();
@@ -111,9 +118,33 @@ function applyServiceFromQuery(selectEl) {
   }
 }
 
+/**
+ * Reset intake gating anytime service changes.
+ */
+function resetIntakeGate() {
+  const completedCheck = $("intakeCompletedCheck");
+  const hidden = $("intakeCompletedHidden");
+  const status = $("intakeStatus");
+
+  if (completedCheck) {
+    completedCheck.checked = false;
+    completedCheck.disabled = true;
+  }
+  if (hidden) hidden.value = "false";
+  if (status) {
+    status.style.display = "none";
+    status.textContent = "";
+  }
+
+  updateSubmitEnabled();
+}
+
+/**
+ * Render per-question fields for the service.
+ */
 function renderIntakeFields(serviceValue) {
-  const titleEl = document.getElementById("intakeTitle");
-  const container = document.getElementById("intakeFields");
+  const titleEl = $("intakeTitle");
+  const container = $("intakeFields");
   if (!titleEl || !container) return;
 
   const questions = SERVICE_QUESTIONS[serviceValue] || [];
@@ -143,11 +174,27 @@ function renderIntakeFields(serviceValue) {
     hiddenQ.name = `intake_question_${qNum}`;
     hiddenQ.value = q;
 
+    // If user edits after saving, require re-save
+    textarea.addEventListener("input", () => {
+      resetIntakeGate();
+    });
+
     wrap.appendChild(label);
     wrap.appendChild(textarea);
     wrap.appendChild(hiddenQ);
     container.appendChild(wrap);
   });
+
+  resetIntakeGate();
+}
+
+function intakeAllAnswered(serviceValue) {
+  const questions = SERVICE_QUESTIONS[serviceValue] || [];
+  for (let i = 0; i < questions.length; i++) {
+    const field = $(`intake_q_${i + 1}`);
+    if (!field || field.value.trim().length === 0) return false;
+  }
+  return true;
 }
 
 function getIntakeAnswers(serviceValue) {
@@ -155,66 +202,183 @@ function getIntakeAnswers(serviceValue) {
   const answers = [];
 
   questions.forEach((q, idx) => {
-    const qNum = idx + 1;
-    const field = document.getElementById(`intake_q_${qNum}`);
-    answers.push({ question: q, answer: field ? field.value.trim() : "" });
+    const field = $(`intake_q_${idx + 1}`);
+    answers.push({
+      question: q,
+      answer: field ? field.value.trim() : ""
+    });
   });
 
   return answers;
 }
 
 function paymentGateOk() {
-  const ref = document.getElementById("cashappConfirmation");
-  const check = document.getElementById("cashappPaidCheck");
+  const ref = $("cashappConfirmation");
+  const check = $("cashappPaidCheck");
   if (!ref || !check) return false;
-
   return ref.value.trim().length >= 4 && check.checked === true;
 }
 
-function showStatus(msg) {
-  const status = document.getElementById("formStatus");
-  if (!status) return;
-  status.style.display = "block";
-  status.textContent = msg;
+function intakeCompletedOk() {
+  const hidden = $("intakeCompletedHidden");
+  return hidden && hidden.value === "true";
+}
+
+function formBasicsOk() {
+  const name = $("name");
+  const email = $("email");
+  const phone = $("phone");
+  const date = $("date");
+  const time = $("time");
+  const service = $("service");
+  if (!name || !email || !phone || !date || !time || !service) return false;
+
+  return (
+    name.value.trim().length > 0 &&
+    email.value.trim().length > 0 &&
+    phone.value.trim().length > 0 &&
+    date.value.trim().length > 0 &&
+    time.value.trim().length > 0 &&
+    service.value.trim().length > 0
+  );
+}
+
+function updateSubmitEnabled() {
+  const submitBtn = $("submitBtn");
+  if (!submitBtn) return;
+
+  // Only enable submit if:
+  // 1) basics are filled, 2) intake completed, 3) payment gate passed
+  const enabled = formBasicsOk() && intakeCompletedOk() && paymentGateOk();
+  submitBtn.disabled = !enabled;
+}
+
+function showIntakeStatus(msg) {
+  const el = $("intakeStatus");
+  if (!el) return;
+  el.style.display = "block";
+  el.textContent = msg;
+}
+
+function showFormStatus(msg) {
+  const el = $("formStatus");
+  if (!el) return;
+  el.style.display = "block";
+  el.textContent = msg;
+}
+
+function wireIntakeTab() {
+  const btn = $("intakeToggleBtn");
+  const panel = $("intakePanel");
+  if (!btn || !panel) return;
+
+  btn.addEventListener("click", () => {
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    btn.setAttribute("aria-expanded", (!isOpen).toString());
+    btn.textContent = isOpen
+      ? "Service Intake Questions (Click to Open)"
+      : "Service Intake Questions (Click to Close)";
+  });
+}
+
+function wireSaveIntake() {
+  const saveBtn = $("saveIntakeBtn");
+  const completedCheck = $("intakeCompletedCheck");
+  const hidden = $("intakeCompletedHidden");
+  const serviceSelect = $("service");
+
+  if (!saveBtn || !completedCheck || !hidden || !serviceSelect) return;
+
+  saveBtn.addEventListener("click", () => {
+    const serviceValue = serviceSelect.value;
+
+    if (!intakeAllAnswered(serviceValue)) {
+      showIntakeStatus("Please answer every intake question before saving.");
+      completedCheck.disabled = true;
+      completedCheck.checked = false;
+      hidden.value = "false";
+      updateSubmitEnabled();
+      return;
+    }
+
+    showIntakeStatus("Intake answers saved. Please check “Intake Completed” to continue.");
+    completedCheck.disabled = false;
+    completedCheck.checked = false;
+    hidden.value = "false";
+    updateSubmitEnabled();
+  });
+
+  completedCheck.addEventListener("change", () => {
+    if (completedCheck.checked) {
+      hidden.value = "true";
+      showIntakeStatus("Intake marked as completed.");
+    } else {
+      hidden.value = "false";
+      showIntakeStatus("Intake completion unchecked.");
+    }
+    updateSubmitEnabled();
+  });
+}
+
+function wireEnableChecks() {
+  // As user fills basics/payment, update submit state in real-time
+  const ids = ["name", "email", "phone", "date", "time", "service", "cashappConfirmation", "cashappPaidCheck"];
+  ids.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", updateSubmitEnabled);
+    el.addEventListener("change", updateSubmitEnabled);
+  });
 }
 
 function wireBookingSubmit() {
-  const form = document.getElementById("bookingForm");
+  const form = $("bookingForm");
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (!form.checkValidity()) {
-      showStatus("Please complete all required fields before submitting.");
+    // Final gates
+    if (!formBasicsOk()) {
+      showFormStatus("Please complete all required booking fields.");
       return;
     }
-
+    if (!intakeCompletedOk()) {
+      showFormStatus("Please complete the Service Intake Questions before submitting the booking.");
+      return;
+    }
     if (!paymentGateOk()) {
-      showStatus("Payment confirmation is required. Enter your Cash App confirmation and check the payment box.");
+      showFormStatus("Payment confirmation is required before submitting the booking.");
       return;
     }
 
     if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      showStatus("Booking form is ready. To save submissions to Google Drive, paste your Google Apps Script Web App URL into script.js.");
+      showFormStatus("Booking form is ready. To save submissions to Google Drive, paste your Google Apps Script Web App URL into script.js.");
       return;
     }
 
-    showStatus("Submitting your request…");
+    showFormStatus("Submitting your request…");
 
-    const serviceValue = document.getElementById("service").value;
+    const serviceValue = $("service").value;
 
     const payload = {
-      name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      phone: document.getElementById("phone").value.trim(),
-      date: document.getElementById("date").value,
-      time: document.getElementById("time").value,
+      name: $("name").value.trim(),
+      email: $("email").value.trim(),
+      phone: $("phone").value.trim(),
+      date: $("date").value,
+      time: $("time").value,
       service: serviceValue,
+
+      // Intake
+      intakeCompleted: true,
       intake: getIntakeAnswers(serviceValue),
-      details: document.getElementById("details").value.trim(),
-      cashappConfirmation: document.getElementById("cashappConfirmation").value.trim(),
-      cashappPaidConfirmed: document.getElementById("cashappPaidCheck").checked
+
+      details: $("details").value.trim(),
+
+      // Payment attestation
+      cashappConfirmation: $("cashappConfirmation").value.trim(),
+      cashappPaidConfirmed: $("cashappPaidCheck").checked
     };
 
     try {
@@ -228,33 +392,46 @@ function wireBookingSubmit() {
 
       if (res.ok && data && data.ok) {
         form.reset();
-        buildTimeOptions(document.getElementById("time"), 10, 20, 15);
+        buildTimeOptions($("time"), 10, 20, 15);
         setMinDate();
-        renderIntakeFields(document.getElementById("service").value);
-        showStatus("Request submitted successfully. Thank you!");
+        renderIntakeFields($("service").value);
+        $("intakePanel").style.display = "none";
+        $("intakeToggleBtn").setAttribute("aria-expanded", "false");
+        $("intakeToggleBtn").textContent = "Service Intake Questions (Click to Open)";
+        showFormStatus("Request submitted successfully. Thank you!");
+        updateSubmitEnabled();
       } else {
-        showStatus("Submission failed. Please try again.");
+        showFormStatus("Submission failed. Please try again.");
       }
     } catch (err) {
-      showStatus("Submission failed (network error). Please try again.");
+      showFormStatus("Submission failed (network error). Please try again.");
     }
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const serviceSelect = document.getElementById("service");
+  const serviceSelect = $("service");
+  if (!$("bookingForm") || !serviceSelect) return;
 
-  if (document.getElementById("bookingForm")) {
-    buildTimeOptions(document.getElementById("time"), 10, 20, 15);
-    setMinDate();
-    applyServiceFromQuery(serviceSelect);
+  buildTimeOptions($("time"), 10, 20, 15);
+  setMinDate();
+  applyServiceFromQuery(serviceSelect);
 
+  wireIntakeTab();
+
+  // Render intake questions for initial service selection
+  renderIntakeFields(serviceSelect.value);
+
+  // If service changes, regenerate questions and reset intake completion
+  serviceSelect.addEventListener("change", () => {
     renderIntakeFields(serviceSelect.value);
+    updateSubmitEnabled();
+  });
 
-    serviceSelect.addEventListener("change", () => {
-      renderIntakeFields(serviceSelect.value);
-    });
+  wireSaveIntake();
+  wireEnableChecks();
+  wireBookingSubmit();
 
-    wireBookingSubmit();
-  }
+  // Initial submit state
+  updateSubmitEnabled();
 });
