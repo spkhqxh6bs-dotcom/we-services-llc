@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Booking Confirmed | We Services LLC</title>
+  <title>Booking Submitted | We Services LLC</title>
   <link rel="stylesheet" href="style.css" />
   <script defer>
     document.addEventListener("DOMContentLoaded", () => {
@@ -13,15 +13,10 @@
       const date = params.get("date") || "Selected Date";
       const time = params.get("time") || "Selected Time";
 
-      const nameEl = document.getElementById("cName");
-      const serviceEl = document.getElementById("cService");
-      const dateEl = document.getElementById("cDate");
-      const timeEl = document.getElementById("cTime");
-
-      if (nameEl) nameEl.textContent = name;
-      if (serviceEl) serviceEl.textContent = service;
-      if (dateEl) dateEl.textContent = date;
-      if (timeEl) timeEl.textContent = time;
+      document.getElementById("cName").textContent = name;
+      document.getElementById("cService").textContent = service;
+      document.getElementById("cDate").textContent = date;
+      document.getElementById("cTime").textContent = time;
     });
   </script>
 </head>
