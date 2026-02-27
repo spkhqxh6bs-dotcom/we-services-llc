@@ -1,7 +1,3 @@
-// Formspree endpoint you provided:
-const FORMSPREE_URL = "https://formspree.io/f/mzdavobw";
-
-// Where to send users after a successful booking:
 const CONFIRMATION_PAGE = "confirmation.html";
 
 const SERVICE_QUESTIONS = {
@@ -130,6 +126,7 @@ function resetIntakeGate() {
     status.style.display = "none";
     status.textContent = "";
   }
+
   updateSubmitEnabled();
 }
 
@@ -154,12 +151,12 @@ function renderIntakeFields(serviceValue) {
 
     const textarea = document.createElement("textarea");
     textarea.id = `intake_q_${qNum}`;
-    textarea.name = `intake_q_${qNum}`;
+    textarea.name = `intake_q_${qNum}`; // not sent directly; compiled into one hidden field
     textarea.rows = 3;
     textarea.required = true;
     textarea.placeholder = "Type your answer here…";
 
-    textarea.addEventListener("input", () => resetIntakeGate());
+    textarea.addEventListener("input", resetIntakeGate);
 
     wrap.appendChild(label);
     wrap.appendChild(textarea);
@@ -220,8 +217,7 @@ function formBasicsOk() {
 function updateSubmitEnabled() {
   const submitBtn = $("submitBtn");
   if (!submitBtn) return;
-  const enabled = formBasicsOk() && intakeCompletedOk() && paymentGateOk();
-  submitBtn.disabled = !enabled;
+  submitBtn.disabled = !(formBasicsOk() && intakeCompletedOk() && paymentGateOk());
 }
 
 function showIntakeStatus(msg) {
@@ -258,8 +254,9 @@ function wireSaveIntake() {
   const completedCheck = $("intakeCompletedCheck");
   const hidden = $("intakeCompletedHidden");
   const serviceSelect = $("service");
+  const compiled = $("intakeAnswersCompiled");
 
-  if (!saveBtn || !completedCheck || !hidden || !serviceSelect) return;
+  if (!saveBtn || !completedCheck || !hidden || !serviceSelect || !compiled) return;
 
   saveBtn.addEventListener("click", () => {
     const serviceValue = serviceSelect.value;
@@ -269,9 +266,18 @@ function wireSaveIntake() {
       completedCheck.disabled = true;
       completedCheck.checked = false;
       hidden.value = "false";
+      compiled.value = "";
       updateSubmitEnabled();
       return;
     }
+
+    // Compile intake answers into a single text block for email
+    const intakePairs = getIntakeAnswers(serviceValue);
+    const intakeText = intakePairs
+      .map((x, i) => `${i + 1}) ${x.question}\nAnswer: ${x.answer}`)
+      .join("\n\n");
+
+    compiled.value = intakeText;
 
     showIntakeStatus("Intake answers saved. Please check “Intake Completed” to continue.");
     completedCheck.disabled = false;
@@ -288,7 +294,7 @@ function wireSaveIntake() {
 }
 
 function wireEnableChecks() {
-  const ids = ["name", "email", "phone", "date", "time", "service", "cashappConfirmation", "cashappPaidCheck"];
+  const ids = ["name","email","phone","date","time","service","cashappConfirmation","cashappPaidCheck"];
   ids.forEach((id) => {
     const el = $(id);
     if (!el) return;
@@ -297,90 +303,62 @@ function wireEnableChecks() {
   });
 }
 
-function redirectToConfirmation(payload) {
-  const params = new URLSearchParams({
-    name: payload.name || "",
-    service: payload.service || "",
-    date: payload.date || "",
-    time: payload.time || ""
-  });
-  window.location.href = `${CONFIRMATION_PAGE}?${params.toString()}`;
-}
+function buildFormspreeHiddenFields() {
+  const subjectEl = $("fspSubject");
+  const msgEl = $("fspMessage");
+  const replyToEl = $("fspReplyTo");
+  const redirectEl = $("fspRedirect");
 
-async function submitToFormspree(payload) {
-  // Use JSON submission (recommended). Formspree accepts JSON when content-type is application/json.
-  const res = await fetch(FORMSPREE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+  const serviceValue = $("service").value;
+  const name = $("name").value.trim();
+  const email = $("email").value.trim();
+  const phone = $("phone").value.trim();
+  const date = $("date").value;
+  const time = $("time").value;
+  const details = $("details").value.trim();
+  const intakeAnswers = $("intakeAnswersCompiled").value || "";
+  const cashRef = $("cashappConfirmation").value.trim();
+  const cashPaid = $("cashappPaidCheck").checked ? "Yes" : "No";
 
-  // Formspree returns JSON; success is usually 200 with { ok: true } or a success message.
-  const data = await res.json().catch(() => null);
+  // Ensure redirect points to your confirmation page on the same site
+  if (redirectEl) redirectEl.value = CONFIRMATION_PAGE;
 
-  if (!res.ok) {
-    const msg = (data && (data.error || data.message)) ? (data.error || data.message) : "Form submission failed.";
-    throw new Error(msg);
-  }
+  if (subjectEl) subjectEl.value = `New Booking Request - ${serviceValue}`;
+  if (replyToEl) replyToEl.value = email;
 
-  return data;
+  const message =
+    `Name: ${name}\n` +
+    `Email: ${email}\n` +
+    `Phone: ${phone}\n` +
+    `Date: ${date}\n` +
+    `Time: ${time}\n` +
+    `Service: ${serviceValue}\n\n` +
+    `--- Intake Answers ---\n${intakeAnswers}\n\n` +
+    `Additional Details: ${details}\n\n` +
+    `CashApp Confirmation: ${cashRef}\n` +
+    `CashApp Paid Confirmed: ${cashPaid}`;
+
+  if (msgEl) msgEl.value = message;
 }
 
 function wireBookingSubmit() {
   const form = $("bookingForm");
   if (!form) return;
 
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
+    // Always block first; only allow submit after gates
     e.preventDefault();
 
-    if (!formBasicsOk()) {
-      showFormStatus("Please complete all required booking fields.");
-      return;
-    }
-    if (!intakeCompletedOk()) {
-      showFormStatus("Please complete the Service Intake Questions before submitting the booking.");
-      return;
-    }
-    if (!paymentGateOk()) {
-      showFormStatus("Payment confirmation is required before submitting the booking.");
-      return;
-    }
+    if (!formBasicsOk()) return showFormStatus("Please complete all required booking fields.");
+    if (!intakeCompletedOk()) return showFormStatus("Please complete the Service Intake Questions before submitting the booking.");
+    if (!paymentGateOk()) return showFormStatus("Payment confirmation is required before submitting the booking.");
 
-    showFormStatus("Submitting your request…");
+    // Build hidden fields and submit natively to Formspree
+    showFormStatus("Submitting…");
+    buildFormspreeHiddenFields();
 
-    const serviceValue = $("service").value;
-
-    // Flatten intake answers into readable text
-    const intakePairs = getIntakeAnswers(serviceValue);
-    const intakeText = intakePairs
-      .map((x, i) => `${i + 1}) ${x.question}\nAnswer: ${x.answer}`)
-      .join("\n\n");
-
-    // Payload sent to Formspree email
-    const payload = {
-      subject: `New Booking Request - ${serviceValue}`,
-      name: $("name").value.trim(),
-      email: $("email").value.trim(),
-      phone: $("phone").value.trim(),
-      preferred_date: $("date").value,
-      preferred_time: $("time").value,
-      service: serviceValue,
-      intake_completed: true,
-      intake_answers: intakeText,
-      additional_details: $("details").value.trim(),
-      cashapp_confirmation: $("cashappConfirmation").value.trim(),
-      cashapp_paid_confirmed: $("cashappPaidCheck").checked ? "Yes" : "No"
-    };
-
-    try {
-      await submitToFormspree(payload);
-      redirectToConfirmation(payload);
-    } catch (err) {
-      showFormStatus(err.message || "Submission failed. Please try again.");
-    }
+    // Native submit (most reliable)
+    form.submit();
   });
 }
 
