@@ -70,9 +70,49 @@
             <option value="Web Design">Web Design</option>
           </select>
 
-          <!-- QUESTIONS (AUTO-UPDATE BASED ON SERVICE) -->
-          <p id="intakeTitle" class="note" style="margin:14px 0 10px 0; font-weight:700;"></p>
-          <div id="intakeFields"></div>
+          <!-- INTAKE TAB (GATED) -->
+          <div style="margin-top:14px;">
+            <button
+              type="button"
+              id="intakeToggleBtn"
+              class="button ghost"
+              style="width:100%; text-align:left;"
+              aria-expanded="false"
+              aria-controls="intakePanel"
+            >
+              Service Intake Questions (Click to Open)
+            </button>
+
+            <div
+              id="intakePanel"
+              style="display:none; margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
+            >
+              <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
+
+              <!-- Questions generate here -->
+              <div id="intakeFields"></div>
+
+              <button type="button" id="saveIntakeBtn" class="button primary" style="margin-top:8px;">
+                Save Intake Answers
+              </button>
+
+              <p id="intakeStatus" class="note" style="margin-top:10px; display:none;"></p>
+
+              <label style="margin-top:12px; display:block;">
+                <input
+                  id="intakeCompletedCheck"
+                  name="intakeCompletedCheck"
+                  type="checkbox"
+                  disabled
+                  style="transform:scale(1.1); margin-right:8px;"
+                />
+                Intake Completed (Required before booking submission)
+              </label>
+
+              <!-- Hidden value included in payload -->
+              <input type="hidden" id="intakeCompletedHidden" name="intakeCompletedHidden" value="false" />
+            </div>
+          </div>
 
           <label for="details">Additional Details (optional)</label>
           <textarea
@@ -107,11 +147,17 @@
           />
 
           <label style="margin-top:12px;">
-            <input id="cashappPaidCheck" name="cashappPaidCheck" type="checkbox" required style="transform:scale(1.1); margin-right:8px;">
+            <input
+              id="cashappPaidCheck"
+              name="cashappPaidCheck"
+              type="checkbox"
+              required
+              style="transform:scale(1.1); margin-right:8px;"
+            />
             I confirm I have sent payment via Cash App to <strong>$jazeminemichae</strong>.
           </label>
 
-          <button class="button primary" type="submit" id="submitBtn">
+          <button class="button primary" type="submit" id="submitBtn" disabled>
             Submit Booking Request
           </button>
 
