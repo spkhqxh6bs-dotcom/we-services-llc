@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmed | We Services LLC</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get("name") || "Customer";
+      const service = params.get("service") || "Selected Service";
+      const date = params.get("date") || "Selected Date";
+      const time = params.get("time") || "Selected Time";
+
+      const nameEl = document.getElementById("cName");
+      const serviceEl = document.getElementById("cService");
+      const dateEl = document.getElementById("cDate");
+      const timeEl = document.getElementById("cTime");
+
+      if (nameEl) nameEl.textContent = name;
+      if (serviceEl) serviceEl.textContent = service;
+      if (dateEl) dateEl.textContent = date;
+      if (timeEl) timeEl.textContent = time;
+    });
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container row">
+      <div class="brand">
+        <img class="brand-logo" src="logo.png" alt="We Services LLC logo">
+        <div class="brand-badge">WE</div>
+        <div>
+          <h1>We Services LLC</h1>
+          <small>We make things happen</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="about.html">About</a>
+        <a href="book.html">Book</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <div class="card">
+        <h3>Booking Submitted</h3>
+        <p class="note">
+          Thank you, <strong id="cName">Customer</strong>. Your booking request has been submitted successfully.
+        </p>
+
+        <hr class="hr" />
+
+        <p class="note" style="margin:0;">
+          <strong>Service:</strong> <span id="cService"></span><br />
+          <strong>Date:</strong> <span id="cDate"></span><br />
+          <strong>Time:</strong> <span id="cTime"></span>
+        </p>
+
+        <hr class="hr" />
+
+        <p class="note">
+          We will review your request and follow up with confirmation details.
+        </p>
+
+        <a class="button primary" href="book.html">Submit Another Booking</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <small>© 2026 We Services LLC</small>
+    </div>
+  </footer>
+</body>
+</html>
