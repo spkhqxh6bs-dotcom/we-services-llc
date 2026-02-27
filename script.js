@@ -1,8 +1,11 @@
-// OPTIONAL: if you're sending bookings to Google Drive via Apps Script, paste your URL here.
-// If you are not using Drive submission yet, leave it blank or keep it placeholder.
+// If you're sending bookings to Google Drive via Apps Script, paste your web app URL here.
+// If you are using Formspree instead, tell me and I’ll swap the submit function.
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
 
-// Intake questions by service (auto-renders)
+/**
+ * Each service maps to a list of intake questions.
+ * The page generates a separate answer input (textarea) for each question.
+ */
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -14,12 +17,12 @@ const SERVICE_QUESTIONS = {
     "What type of business do you operate?",
     "What stage is your business in (startup, growing, established, struggling)?",
     "What specific area needs improvement (marketing, operations, staffing, finances, strategy)?",
-    "What outcome would make this session successful?"
+    "What outcome would make this session successful for you?"
   ],
   "Couples Consulting": [
     "What is the main challenge you’d like to address?",
     "How long has this issue been present?",
-    "Are both parties attending the consultation?",
+    "Are both parties attending the consultation (yes/no)?",
     "Are you seeking communication improvement, conflict resolution, goal alignment, or pre-marital planning?"
   ],
   "Sports Consulting": [
@@ -100,9 +103,6 @@ function setMinDate() {
   dateEl.min = `${yyyy}-${mm}-${dd}`;
 }
 
-/**
- * Pre-select service from URL: book.html?service=Security%20Consulting
- */
 function applyServiceFromQuery(selectEl) {
   if (!selectEl) return;
   const params = new URLSearchParams(window.location.search);
@@ -118,49 +118,117 @@ function applyServiceFromQuery(selectEl) {
 }
 
 /**
- * Render the questions list for the selected service.
+ * Render question + its own answer field (textarea) for each intake question.
+ * Each answer field is required.
  */
-function renderIntakeQuestions(serviceValue) {
-  const listEl = document.getElementById("intakeList");
-  const answersEl = document.getElementById("intakeAnswers");
-  if (!listEl || !answersEl) return;
+function renderIntakeFields(serviceValue) {
+  const titleEl = document.getElementById("intakeTitle");
+  const container = document.getElementById("intakeFields");
+  if (!titleEl || !container) return;
 
   const questions = SERVICE_QUESTIONS[serviceValue] || [];
-  listEl.innerHTML = "";
+  titleEl.textContent = `Questions for: ${serviceValue}`;
+
+  // Clear old fields
+  container.innerHTML = "";
 
   questions.forEach((q, idx) => {
-    const li = document.createElement("li");
-    li.textContent = `${idx + 1}. ${q}`;
-    listEl.appendChild(li);
+    const qNum = idx + 1;
+
+    const wrap = document.createElement("div");
+    wrap.style.marginBottom = "12px";
+
+    const label = document.createElement("label");
+    label.setAttribute("for", `intake_q_${qNum}`);
+    label.textContent = `${qNum}. ${q}`;
+
+    const textarea = document.createElement("textarea");
+    textarea.id = `intake_q_${qNum}`;
+    textarea.name = `intake_q_${qNum}`;
+    textarea.rows = 3;
+    textarea.required = true;
+    textarea.placeholder = "Type your answer here…";
+
+    // Store the actual question text too (helps on the receiving end)
+    const hiddenQ = document.createElement("input");
+    hiddenQ.type = "hidden";
+    hiddenQ.name = `intake_question_${qNum}`;
+    hiddenQ.value = q;
+
+    wrap.appendChild(label);
+    wrap.appendChild(textarea);
+    wrap.appendChild(hiddenQ);
+
+    container.appendChild(wrap);
+  });
+}
+
+function getIntakeAnswers(serviceValue) {
+  const questions = SERVICE_QUESTIONS[serviceValue] || [];
+  const answers = [];
+
+  questions.forEach((q, idx) => {
+    const qNum = idx + 1;
+    const field = document.getElementById(`intake_q_${qNum}`);
+    answers.push({
+      question: q,
+      answer: field ? field.value.trim() : ""
+    });
   });
 
-  // If the user hasn't typed anything yet, keep a helpful placeholder.
-  if (!answersEl.value.trim()) {
-    answersEl.placeholder = "Answer the questions above. Numbered answers work best (1, 2, 3…).";
-  }
+  return answers;
+}
+
+function paymentGateOk() {
+  const ref = document.getElementById("cashappConfirmation");
+  const check = document.getElementById("cashappPaidCheck");
+  if (!ref || !check) return false;
+
+  const hasRef = ref.value.trim().length >= 4;
+  const checked = check.checked === true;
+
+  return hasRef && checked;
+}
+
+function showStatus(msg) {
+  const status = document.getElementById("formStatus");
+  if (!status) return;
+  status.style.display = "block";
+  status.textContent = msg;
 }
 
 /**
- * OPTIONAL: If you're using Google Drive routing, this submits the booking to your Apps Script Web App.
- * If you are not using Drive routing, you can remove this and I’ll switch it to Formspree.
+ * Submit handler (currently set up for Google Drive via Apps Script).
+ * If you're using Formspree instead, tell me and I’ll swap this submit to Formspree.
  */
 function wireBookingSubmit() {
   const form = document.getElementById("bookingForm");
-  const status = document.getElementById("formStatus");
-  if (!form || !status) return;
+  if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // If not connected to Drive endpoint, show a helpful message
-    if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      status.style.display = "block";
-      status.textContent = "Booking form is ready. If you want submissions saved to Google Drive, paste your Google Apps Script Web App URL into script.js.";
+    // Basic HTML validity check
+    if (!form.checkValidity()) {
+      showStatus("Please complete all required fields before submitting.");
       return;
     }
 
-    status.style.display = "block";
-    status.textContent = "Submitting your request…";
+    // Payment gate (attestation)
+    if (!paymentGateOk()) {
+      showStatus("Payment confirmation is required. Enter your Cash App confirmation and check the payment box.");
+      return;
+    }
+
+    // If Drive endpoint not configured, stop with instructions
+    if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
+      showStatus("Booking form is ready, but not connected. Paste your Google Apps Script Web App URL into script.js.");
+      return;
+    }
+
+    showStatus("Submitting your request…");
+
+    const serviceValue = document.getElementById("service").value;
 
     const payload = {
       name: document.getElementById("name").value.trim(),
@@ -168,9 +236,11 @@ function wireBookingSubmit() {
       phone: document.getElementById("phone").value.trim(),
       date: document.getElementById("date").value,
       time: document.getElementById("time").value,
-      service: document.getElementById("service").value,
-      intakeAnswers: document.getElementById("intakeAnswers").value.trim(),
-      details: document.getElementById("details").value.trim()
+      service: serviceValue,
+      intake: getIntakeAnswers(serviceValue),
+      details: document.getElementById("details").value.trim(),
+      cashappConfirmation: document.getElementById("cashappConfirmation").value.trim(),
+      cashappPaidConfirmed: document.getElementById("cashappPaidCheck").checked
     };
 
     try {
@@ -186,13 +256,13 @@ function wireBookingSubmit() {
         form.reset();
         buildTimeOptions(document.getElementById("time"), 10, 20, 15);
         setMinDate();
-        renderIntakeQuestions(document.getElementById("service").value);
-        status.textContent = "Request submitted successfully. Thank you!";
+        renderIntakeFields(document.getElementById("service").value);
+        showStatus("Request submitted successfully. Thank you!");
       } else {
-        status.textContent = "Submission failed. Please try again.";
+        showStatus("Submission failed. Please try again.");
       }
     } catch (err) {
-      status.textContent = "Submission failed (network error). Please try again.";
+      showStatus("Submission failed (network error). Please try again.");
     }
   });
 }
@@ -204,15 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
     buildTimeOptions(document.getElementById("time"), 10, 20, 15);
     setMinDate();
 
-    // Prefill service from URL (Buy Now buttons)
+    // Preselect if coming from a link like book.html?service=AI%20Consulting
     applyServiceFromQuery(serviceSelect);
 
-    // Render questions for initial service selection
-    renderIntakeQuestions(serviceSelect.value);
+    // Render the right question set immediately
+    renderIntakeFields(serviceSelect.value);
 
-    // Update questions instantly when the service changes
+    // Update questions when service changes
     serviceSelect.addEventListener("change", () => {
-      renderIntakeQuestions(serviceSelect.value);
+      renderIntakeFields(serviceSelect.value);
     });
 
     wireBookingSubmit();
