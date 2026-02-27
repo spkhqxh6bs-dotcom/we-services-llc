@@ -1,4 +1,8 @@
+// PASTE your Google Apps Script Web App URL here for real submissions:
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
+
+// Where to send users after a successful booking:
+const CONFIRMATION_PAGE = "confirmation.html";
 
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
@@ -126,7 +130,6 @@ function resetIntakeGate() {
     status.style.display = "none";
     status.textContent = "";
   }
-
   updateSubmitEnabled();
 }
 
@@ -161,9 +164,7 @@ function renderIntakeFields(serviceValue) {
     hiddenQ.name = `intake_question_${qNum}`;
     hiddenQ.value = q;
 
-    textarea.addEventListener("input", () => {
-      resetIntakeGate();
-    });
+    textarea.addEventListener("input", () => resetIntakeGate());
 
     wrap.appendChild(label);
     wrap.appendChild(textarea);
@@ -250,7 +251,7 @@ function wireIntakeTab() {
 
   btn.addEventListener("click", () => {
     const isOpen = !panel.hidden;
-    panel.hidden = isOpen; // toggle
+    panel.hidden = isOpen;
     btn.setAttribute("aria-expanded", (!isOpen).toString());
     btn.textContent = isOpen
       ? "Service Intake Questions (Click to Open)"
@@ -307,6 +308,19 @@ function wireEnableChecks() {
   });
 }
 
+// ---- NEW: Redirect after success ----
+function redirectToConfirmation(payload) {
+  // Keep it simple: show only non-sensitive info on the URL
+  const params = new URLSearchParams({
+    name: payload.name || "",
+    service: payload.service || "",
+    date: payload.date || "",
+    time: payload.time || ""
+  });
+
+  window.location.href = `${CONFIRMATION_PAGE}?${params.toString()}`;
+}
+
 function wireBookingSubmit() {
   const form = $("bookingForm");
   if (!form) return;
@@ -328,7 +342,7 @@ function wireBookingSubmit() {
     }
 
     if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      showFormStatus("Toggle works. Now paste your Google Apps Script Web App URL into script.js to save submissions to Google Drive.");
+      showFormStatus("Booking form is ready. Paste your Google Apps Script Web App URL into script.js to enable submissions and redirect.");
       return;
     }
 
@@ -360,21 +374,8 @@ function wireBookingSubmit() {
       const data = await res.json().catch(() => null);
 
       if (res.ok && data && data.ok) {
-        form.reset();
-        buildTimeOptions($("time"), 10, 20, 15);
-        setMinDate();
-        renderIntakeFields($("service").value);
-
-        const panel = $("intakePanel");
-        const btn = $("intakeToggleBtn");
-        if (panel && btn) {
-          panel.hidden = true;
-          btn.setAttribute("aria-expanded", "false");
-          btn.textContent = "Service Intake Questions (Click to Open)";
-        }
-
-        showFormStatus("Request submitted successfully. Thank you!");
-        updateSubmitEnabled();
+        // Redirect to confirmation screen
+        redirectToConfirmation(payload);
       } else {
         showFormStatus("Submission failed. Please try again.");
       }
@@ -385,7 +386,6 @@ function wireBookingSubmit() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Debug indicator to confirm JS is actually running
   const jsLoaded = $("jsLoaded");
   if (jsLoaded) jsLoaded.textContent = "JavaScript status: loaded ✓";
 
