@@ -70,20 +70,9 @@
             <option value="Web Design">Web Design</option>
           </select>
 
-          <!-- DYNAMIC QUESTIONS AREA -->
-          <div style="margin-top:14px;">
-            <div class="tag">Service Intake Questions</div>
-
-            <p class="note" style="margin-top:0;">
-              Questions below update automatically based on the service you select. Please answer each one.
-            </p>
-
-            <!-- Shows "Questions for: X" -->
-            <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
-
-            <!-- JS will generate fields here -->
-            <div id="intakeFields"></div>
-          </div>
+          <!-- QUESTIONS (AUTO-UPDATE BASED ON SERVICE) -->
+          <p id="intakeTitle" class="note" style="margin:14px 0 10px 0; font-weight:700;"></p>
+          <div id="intakeFields"></div>
 
           <label for="details">Additional Details (optional)</label>
           <textarea
