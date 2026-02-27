@@ -1,5 +1,5 @@
-// PASTE your Google Apps Script Web App URL here for real submissions:
-const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
+// Formspree endpoint you provided:
+const FORMSPREE_URL = "https://formspree.io/f/mzdavobw";
 
 // Where to send users after a successful booking:
 const CONFIRMATION_PAGE = "confirmation.html";
@@ -159,16 +159,10 @@ function renderIntakeFields(serviceValue) {
     textarea.required = true;
     textarea.placeholder = "Type your answer here…";
 
-    const hiddenQ = document.createElement("input");
-    hiddenQ.type = "hidden";
-    hiddenQ.name = `intake_question_${qNum}`;
-    hiddenQ.value = q;
-
     textarea.addEventListener("input", () => resetIntakeGate());
 
     wrap.appendChild(label);
     wrap.appendChild(textarea);
-    wrap.appendChild(hiddenQ);
     container.appendChild(wrap);
   });
 
@@ -287,13 +281,8 @@ function wireSaveIntake() {
   });
 
   completedCheck.addEventListener("change", () => {
-    if (completedCheck.checked) {
-      hidden.value = "true";
-      showIntakeStatus("Intake marked as completed.");
-    } else {
-      hidden.value = "false";
-      showIntakeStatus("Intake completion unchecked.");
-    }
+    hidden.value = completedCheck.checked ? "true" : "false";
+    showIntakeStatus(completedCheck.checked ? "Intake marked as completed." : "Intake completion unchecked.");
     updateSubmitEnabled();
   });
 }
@@ -308,17 +297,36 @@ function wireEnableChecks() {
   });
 }
 
-// ---- NEW: Redirect after success ----
 function redirectToConfirmation(payload) {
-  // Keep it simple: show only non-sensitive info on the URL
   const params = new URLSearchParams({
     name: payload.name || "",
     service: payload.service || "",
     date: payload.date || "",
     time: payload.time || ""
   });
-
   window.location.href = `${CONFIRMATION_PAGE}?${params.toString()}`;
+}
+
+async function submitToFormspree(payload) {
+  // Use JSON submission (recommended). Formspree accepts JSON when content-type is application/json.
+  const res = await fetch(FORMSPREE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  // Formspree returns JSON; success is usually 200 with { ok: true } or a success message.
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = (data && (data.error || data.message)) ? (data.error || data.message) : "Form submission failed.";
+    throw new Error(msg);
+  }
+
+  return data;
 }
 
 function wireBookingSubmit() {
@@ -341,46 +349,37 @@ function wireBookingSubmit() {
       return;
     }
 
-    if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      showFormStatus("Booking form is ready. Paste your Google Apps Script Web App URL into script.js to enable submissions and redirect.");
-      return;
-    }
-
     showFormStatus("Submitting your request…");
 
     const serviceValue = $("service").value;
 
+    // Flatten intake answers into readable text
+    const intakePairs = getIntakeAnswers(serviceValue);
+    const intakeText = intakePairs
+      .map((x, i) => `${i + 1}) ${x.question}\nAnswer: ${x.answer}`)
+      .join("\n\n");
+
+    // Payload sent to Formspree email
     const payload = {
+      subject: `New Booking Request - ${serviceValue}`,
       name: $("name").value.trim(),
       email: $("email").value.trim(),
       phone: $("phone").value.trim(),
-      date: $("date").value,
-      time: $("time").value,
+      preferred_date: $("date").value,
+      preferred_time: $("time").value,
       service: serviceValue,
-      intakeCompleted: true,
-      intake: getIntakeAnswers(serviceValue),
-      details: $("details").value.trim(),
-      cashappConfirmation: $("cashappConfirmation").value.trim(),
-      cashappPaidConfirmed: $("cashappPaidCheck").checked
+      intake_completed: true,
+      intake_answers: intakeText,
+      additional_details: $("details").value.trim(),
+      cashapp_confirmation: $("cashappConfirmation").value.trim(),
+      cashapp_paid_confirmed: $("cashappPaidCheck").checked ? "Yes" : "No"
     };
 
     try {
-      const res = await fetch(GOOGLE_WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (res.ok && data && data.ok) {
-        // Redirect to confirmation screen
-        redirectToConfirmation(payload);
-      } else {
-        showFormStatus("Submission failed. Please try again.");
-      }
+      await submitToFormspree(payload);
+      redirectToConfirmation(payload);
     } catch (err) {
-      showFormStatus("Submission failed (network error). Please try again.");
+      showFormStatus(err.message || "Submission failed. Please try again.");
     }
   });
 }
