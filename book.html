@@ -38,7 +38,7 @@
       </p>
 
       <div class="card">
-        <form id="bookingForm" class="form">
+        <form id="bookingForm" class="form" novalidate>
           <label for="name">Full Name</label>
           <input id="name" name="name" type="text" required placeholder="Your full name" />
 
@@ -70,23 +70,19 @@
             <option value="Web Design">Web Design</option>
           </select>
 
-          <!-- DYNAMIC INTAKE QUESTIONS (AUTO-UPDATES BASED ON SERVICE) -->
+          <!-- DYNAMIC QUESTIONS AREA -->
           <div style="margin-top:14px;">
             <div class="tag">Service Intake Questions</div>
+
             <p class="note" style="margin-top:0;">
-              These questions update automatically based on the service you choose. Please answer them below.
+              Questions below update automatically based on the service you select. Please answer each one.
             </p>
 
-            <ul id="intakeList" class="note" style="margin:0; padding-left:18px;"></ul>
+            <!-- Shows "Questions for: X" -->
+            <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
 
-            <label for="intakeAnswers">Your Answers (required)</label>
-            <textarea
-              id="intakeAnswers"
-              name="intakeAnswers"
-              rows="8"
-              required
-              placeholder="Answer the questions above. Numbered answers work best (1, 2, 3…)."
-            ></textarea>
+            <!-- JS will generate fields here -->
+            <div id="intakeFields"></div>
           </div>
 
           <label for="details">Additional Details (optional)</label>
@@ -97,21 +93,41 @@
             placeholder="Any extra details that would help us prepare."
           ></textarea>
 
-          <button class="button primary" type="submit">Submit Booking Request</button>
+          <hr class="hr" />
+
+          <!-- PAYMENT REQUIRED (attestation gate) -->
+          <h3 style="margin:0 0 10px 0;">Payment Required</h3>
+          <p class="note" style="margin-top:0;">
+            To confirm your booking request, please send payment via Cash App:
+            <strong>$jazeminemichae</strong>
+          </p>
+
+          <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
+            Pay with Cash App
+          </a>
+
+          <label for="cashappConfirmation" style="margin-top:12px;">
+            Cash App Payment Confirmation (Transaction ID / Reference / Note)
+          </label>
+          <input
+            id="cashappConfirmation"
+            name="cashappConfirmation"
+            type="text"
+            required
+            placeholder="Example: Cash App transaction ID or note you included"
+          />
+
+          <label style="margin-top:12px;">
+            <input id="cashappPaidCheck" name="cashappPaidCheck" type="checkbox" required style="transform:scale(1.1); margin-right:8px;">
+            I confirm I have sent payment via Cash App to <strong>$jazeminemichae</strong>.
+          </label>
+
+          <button class="button primary" type="submit" id="submitBtn">
+            Submit Booking Request
+          </button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
         </form>
-
-        <hr class="hr" />
-
-        <h3 style="margin:0 0 10px 0;">Payment</h3>
-        <p class="note" style="margin-top:0;">
-          Pay securely via Cash App:
-          <strong>$jazeminemichae</strong>
-        </p>
-        <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
-          Pay with Cash App
-        </a>
       </div>
     </div>
   </section>
