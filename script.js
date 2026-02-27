@@ -1,10 +1,5 @@
-// If you're using Google Drive (Apps Script) to store bookings, paste your web app URL here.
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
 
-/**
- * Intake questions per service.
- * Each question gets its own required answer textarea.
- */
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -72,7 +67,6 @@ function $(id) { return document.getElementById(id); }
 
 function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
-
   selectEl.innerHTML = "";
   const pad = (n) => String(n).padStart(2, "0");
 
@@ -118,9 +112,6 @@ function applyServiceFromQuery(selectEl) {
   }
 }
 
-/**
- * Reset intake gating anytime service changes.
- */
 function resetIntakeGate() {
   const completedCheck = $("intakeCompletedCheck");
   const hidden = $("intakeCompletedHidden");
@@ -139,9 +130,6 @@ function resetIntakeGate() {
   updateSubmitEnabled();
 }
 
-/**
- * Render per-question fields for the service.
- */
 function renderIntakeFields(serviceValue) {
   const titleEl = $("intakeTitle");
   const container = $("intakeFields");
@@ -149,7 +137,6 @@ function renderIntakeFields(serviceValue) {
 
   const questions = SERVICE_QUESTIONS[serviceValue] || [];
   titleEl.textContent = `Questions for: ${serviceValue}`;
-
   container.innerHTML = "";
 
   questions.forEach((q, idx) => {
@@ -174,7 +161,6 @@ function renderIntakeFields(serviceValue) {
     hiddenQ.name = `intake_question_${qNum}`;
     hiddenQ.value = q;
 
-    // If user edits after saving, require re-save
     textarea.addEventListener("input", () => {
       resetIntakeGate();
     });
@@ -199,17 +185,10 @@ function intakeAllAnswered(serviceValue) {
 
 function getIntakeAnswers(serviceValue) {
   const questions = SERVICE_QUESTIONS[serviceValue] || [];
-  const answers = [];
-
-  questions.forEach((q, idx) => {
+  return questions.map((q, idx) => {
     const field = $(`intake_q_${idx + 1}`);
-    answers.push({
-      question: q,
-      answer: field ? field.value.trim() : ""
-    });
+    return { question: q, answer: field ? field.value.trim() : "" };
   });
-
-  return answers;
 }
 
 function paymentGateOk() {
@@ -246,9 +225,6 @@ function formBasicsOk() {
 function updateSubmitEnabled() {
   const submitBtn = $("submitBtn");
   if (!submitBtn) return;
-
-  // Only enable submit if:
-  // 1) basics are filled, 2) intake completed, 3) payment gate passed
   const enabled = formBasicsOk() && intakeCompletedOk() && paymentGateOk();
   submitBtn.disabled = !enabled;
 }
@@ -273,8 +249,8 @@ function wireIntakeTab() {
   if (!btn || !panel) return;
 
   btn.addEventListener("click", () => {
-    const isOpen = panel.style.display !== "none";
-    panel.style.display = isOpen ? "none" : "block";
+    const isOpen = !panel.hidden;
+    panel.hidden = isOpen; // toggle
     btn.setAttribute("aria-expanded", (!isOpen).toString());
     btn.textContent = isOpen
       ? "Service Intake Questions (Click to Open)"
@@ -322,7 +298,6 @@ function wireSaveIntake() {
 }
 
 function wireEnableChecks() {
-  // As user fills basics/payment, update submit state in real-time
   const ids = ["name", "email", "phone", "date", "time", "service", "cashappConfirmation", "cashappPaidCheck"];
   ids.forEach((id) => {
     const el = $(id);
@@ -339,7 +314,6 @@ function wireBookingSubmit() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Final gates
     if (!formBasicsOk()) {
       showFormStatus("Please complete all required booking fields.");
       return;
@@ -354,7 +328,7 @@ function wireBookingSubmit() {
     }
 
     if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      showFormStatus("Booking form is ready. To save submissions to Google Drive, paste your Google Apps Script Web App URL into script.js.");
+      showFormStatus("Toggle works. Now paste your Google Apps Script Web App URL into script.js to save submissions to Google Drive.");
       return;
     }
 
@@ -369,14 +343,9 @@ function wireBookingSubmit() {
       date: $("date").value,
       time: $("time").value,
       service: serviceValue,
-
-      // Intake
       intakeCompleted: true,
       intake: getIntakeAnswers(serviceValue),
-
       details: $("details").value.trim(),
-
-      // Payment attestation
       cashappConfirmation: $("cashappConfirmation").value.trim(),
       cashappPaidConfirmed: $("cashappPaidCheck").checked
     };
@@ -395,9 +364,15 @@ function wireBookingSubmit() {
         buildTimeOptions($("time"), 10, 20, 15);
         setMinDate();
         renderIntakeFields($("service").value);
-        $("intakePanel").style.display = "none";
-        $("intakeToggleBtn").setAttribute("aria-expanded", "false");
-        $("intakeToggleBtn").textContent = "Service Intake Questions (Click to Open)";
+
+        const panel = $("intakePanel");
+        const btn = $("intakeToggleBtn");
+        if (panel && btn) {
+          panel.hidden = true;
+          btn.setAttribute("aria-expanded", "false");
+          btn.textContent = "Service Intake Questions (Click to Open)";
+        }
+
         showFormStatus("Request submitted successfully. Thank you!");
         updateSubmitEnabled();
       } else {
@@ -410,19 +385,21 @@ function wireBookingSubmit() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Debug indicator to confirm JS is actually running
+  const jsLoaded = $("jsLoaded");
+  if (jsLoaded) jsLoaded.textContent = "JavaScript status: loaded ✓";
+
   const serviceSelect = $("service");
-  if (!$("bookingForm") || !serviceSelect) return;
+  const bookingForm = $("bookingForm");
+  if (!bookingForm || !serviceSelect) return;
 
   buildTimeOptions($("time"), 10, 20, 15);
   setMinDate();
   applyServiceFromQuery(serviceSelect);
 
   wireIntakeTab();
-
-  // Render intake questions for initial service selection
   renderIntakeFields(serviceSelect.value);
 
-  // If service changes, regenerate questions and reset intake completion
   serviceSelect.addEventListener("change", () => {
     renderIntakeFields(serviceSelect.value);
     updateSubmitEnabled();
@@ -431,7 +408,5 @@ document.addEventListener("DOMContentLoaded", () => {
   wireSaveIntake();
   wireEnableChecks();
   wireBookingSubmit();
-
-  // Initial submit state
   updateSubmitEnabled();
 });
