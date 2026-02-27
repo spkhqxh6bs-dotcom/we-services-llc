@@ -1,8 +1,8 @@
-// If you're using the Google Drive (Apps Script) submission endpoint, paste it here.
-// If you are NOT using it, you can leave it blank and I’ll adjust to Formspree.
+// OPTIONAL: if you're sending bookings to Google Drive via Apps Script, paste your URL here.
+// If you are not using Drive submission yet, leave it blank or keep it placeholder.
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
 
-// ---- SERVICE-SPECIFIC INTAKE QUESTIONS ----
+// Intake questions by service (auto-renders)
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -66,7 +66,6 @@ const SERVICE_QUESTIONS = {
   ]
 };
 
-// ---- UTILITIES ----
 function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   if (!selectEl) return;
 
@@ -101,6 +100,9 @@ function setMinDate() {
   dateEl.min = `${yyyy}-${mm}-${dd}`;
 }
 
+/**
+ * Pre-select service from URL: book.html?service=Security%20Consulting
+ */
 function applyServiceFromQuery(selectEl) {
   if (!selectEl) return;
   const params = new URLSearchParams(window.location.search);
@@ -115,36 +117,34 @@ function applyServiceFromQuery(selectEl) {
   }
 }
 
-function renderIntakeQuestions(service) {
-  const list = document.getElementById("intakeList");
-  const answers = document.getElementById("intakeAnswers");
-  if (!list || !answers) return;
+/**
+ * Render the questions list for the selected service.
+ */
+function renderIntakeQuestions(serviceValue) {
+  const listEl = document.getElementById("intakeList");
+  const answersEl = document.getElementById("intakeAnswers");
+  if (!listEl || !answersEl) return;
 
-  const qs = SERVICE_QUESTIONS[service] || [];
-  list.innerHTML = "";
+  const questions = SERVICE_QUESTIONS[serviceValue] || [];
+  listEl.innerHTML = "";
 
-  qs.forEach((q, idx) => {
+  questions.forEach((q, idx) => {
     const li = document.createElement("li");
     li.textContent = `${idx + 1}. ${q}`;
-    list.appendChild(li);
+    listEl.appendChild(li);
   });
 
-  // Helpful prompt (does not overwrite if user already typed)
-  if (!answers.value.trim()) {
-    answers.placeholder = "Type your answers here (numbered is best).";
+  // If the user hasn't typed anything yet, keep a helpful placeholder.
+  if (!answersEl.value.trim()) {
+    answersEl.placeholder = "Answer the questions above. Numbered answers work best (1, 2, 3…).";
   }
 }
 
-function paymentGateOk() {
-  const paidCheck = document.getElementById("paidCheck");
-  const cashappTxn = document.getElementById("cashappTxn");
-  if (!paidCheck || !cashappTxn) return false;
-
-  return paidCheck.checked && cashappTxn.value.trim().length >= 4;
-}
-
-// ---- SUBMIT TO GOOGLE DRIVE (Apps Script) ----
-function wireBookingToGoogleDrive() {
+/**
+ * OPTIONAL: If you're using Google Drive routing, this submits the booking to your Apps Script Web App.
+ * If you are not using Drive routing, you can remove this and I’ll switch it to Formspree.
+ */
+function wireBookingSubmit() {
   const form = document.getElementById("bookingForm");
   const status = document.getElementById("formStatus");
   if (!form || !status) return;
@@ -152,17 +152,10 @@ function wireBookingToGoogleDrive() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // PAYMENT GATE (cannot truly verify Cash App; this is user-provided confirmation)
-    if (!paymentGateOk()) {
-      status.style.display = "block";
-      status.textContent = "Payment confirmation is required. Please enter your Cash App transaction/reference and check the confirmation box.";
-      return;
-    }
-
-    // If you're not using Drive submission, stop here (tell me and I’ll switch to Formspree).
+    // If not connected to Drive endpoint, show a helpful message
     if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
       status.style.display = "block";
-      status.textContent = "Booking system is not connected yet. Add your Google Web App URL in script.js.";
+      status.textContent = "Booking form is ready. If you want submissions saved to Google Drive, paste your Google Apps Script Web App URL into script.js.";
       return;
     }
 
@@ -177,9 +170,7 @@ function wireBookingToGoogleDrive() {
       time: document.getElementById("time").value,
       service: document.getElementById("service").value,
       intakeAnswers: document.getElementById("intakeAnswers").value.trim(),
-      details: document.getElementById("details").value.trim(),
-      cashappTxn: document.getElementById("cashappTxn").value.trim(),
-      paidConfirmed: document.getElementById("paidCheck").checked
+      details: document.getElementById("details").value.trim()
     };
 
     try {
@@ -212,16 +203,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("bookingForm")) {
     buildTimeOptions(document.getElementById("time"), 10, 20, 15);
     setMinDate();
+
+    // Prefill service from URL (Buy Now buttons)
     applyServiceFromQuery(serviceSelect);
 
-    // Render initial questions
+    // Render questions for initial service selection
     renderIntakeQuestions(serviceSelect.value);
 
-    // Update questions when service changes
+    // Update questions instantly when the service changes
     serviceSelect.addEventListener("change", () => {
       renderIntakeQuestions(serviceSelect.value);
     });
 
-    wireBookingToGoogleDrive();
+    wireBookingSubmit();
   }
 });
