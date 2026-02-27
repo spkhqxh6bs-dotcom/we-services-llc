@@ -1,11 +1,5 @@
-// If you're sending bookings to Google Drive via Apps Script, paste your web app URL here.
-// If you are using Formspree instead, tell me and I’ll swap the submit function.
 const GOOGLE_WEB_APP_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
 
-/**
- * Each service maps to a list of intake questions.
- * The page generates a separate answer input (textarea) for each question.
- */
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -117,10 +111,6 @@ function applyServiceFromQuery(selectEl) {
   }
 }
 
-/**
- * Render question + its own answer field (textarea) for each intake question.
- * Each answer field is required.
- */
 function renderIntakeFields(serviceValue) {
   const titleEl = document.getElementById("intakeTitle");
   const container = document.getElementById("intakeFields");
@@ -129,7 +119,6 @@ function renderIntakeFields(serviceValue) {
   const questions = SERVICE_QUESTIONS[serviceValue] || [];
   titleEl.textContent = `Questions for: ${serviceValue}`;
 
-  // Clear old fields
   container.innerHTML = "";
 
   questions.forEach((q, idx) => {
@@ -149,7 +138,6 @@ function renderIntakeFields(serviceValue) {
     textarea.required = true;
     textarea.placeholder = "Type your answer here…";
 
-    // Store the actual question text too (helps on the receiving end)
     const hiddenQ = document.createElement("input");
     hiddenQ.type = "hidden";
     hiddenQ.name = `intake_question_${qNum}`;
@@ -158,7 +146,6 @@ function renderIntakeFields(serviceValue) {
     wrap.appendChild(label);
     wrap.appendChild(textarea);
     wrap.appendChild(hiddenQ);
-
     container.appendChild(wrap);
   });
 }
@@ -170,10 +157,7 @@ function getIntakeAnswers(serviceValue) {
   questions.forEach((q, idx) => {
     const qNum = idx + 1;
     const field = document.getElementById(`intake_q_${qNum}`);
-    answers.push({
-      question: q,
-      answer: field ? field.value.trim() : ""
-    });
+    answers.push({ question: q, answer: field ? field.value.trim() : "" });
   });
 
   return answers;
@@ -184,10 +168,7 @@ function paymentGateOk() {
   const check = document.getElementById("cashappPaidCheck");
   if (!ref || !check) return false;
 
-  const hasRef = ref.value.trim().length >= 4;
-  const checked = check.checked === true;
-
-  return hasRef && checked;
+  return ref.value.trim().length >= 4 && check.checked === true;
 }
 
 function showStatus(msg) {
@@ -197,10 +178,6 @@ function showStatus(msg) {
   status.textContent = msg;
 }
 
-/**
- * Submit handler (currently set up for Google Drive via Apps Script).
- * If you're using Formspree instead, tell me and I’ll swap this submit to Formspree.
- */
 function wireBookingSubmit() {
   const form = document.getElementById("bookingForm");
   if (!form) return;
@@ -208,21 +185,18 @@ function wireBookingSubmit() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Basic HTML validity check
     if (!form.checkValidity()) {
       showStatus("Please complete all required fields before submitting.");
       return;
     }
 
-    // Payment gate (attestation)
     if (!paymentGateOk()) {
       showStatus("Payment confirmation is required. Enter your Cash App confirmation and check the payment box.");
       return;
     }
 
-    // If Drive endpoint not configured, stop with instructions
     if (!GOOGLE_WEB_APP_URL || GOOGLE_WEB_APP_URL.includes("YOUR_GOOGLE_WEB_APP_URL_HERE")) {
-      showStatus("Booking form is ready, but not connected. Paste your Google Apps Script Web App URL into script.js.");
+      showStatus("Booking form is ready. To save submissions to Google Drive, paste your Google Apps Script Web App URL into script.js.");
       return;
     }
 
@@ -273,14 +247,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("bookingForm")) {
     buildTimeOptions(document.getElementById("time"), 10, 20, 15);
     setMinDate();
-
-    // Preselect if coming from a link like book.html?service=AI%20Consulting
     applyServiceFromQuery(serviceSelect);
 
-    // Render the right question set immediately
     renderIntakeFields(serviceSelect.value);
 
-    // Update questions when service changes
     serviceSelect.addEventListener("change", () => {
       renderIntakeFields(serviceSelect.value);
     });
