@@ -33,20 +33,11 @@
     <div class="container">
       <h3>Booking Request</h3>
       <p class="note">
-        Please complete the form below to request a consultation.
-        Available booking times are <strong>10:00 AM – 8:00 PM</strong>.
+        Complete the intake and submit your request first. You’ll be sent to card payment immediately after submission.
       </p>
 
       <div class="card">
-        <!-- ✅ Native Formspree submit -->
-        <form
-          id="bookingForm"
-          class="form"
-          action="https://formspree.io/f/mzdavobw"
-          method="POST"
-          novalidate
-        >
-          <!-- ✅ Formspree special fields -->
+        <form id="bookingForm" class="form" action="https://formspree.io/f/mzdavobw" method="POST" novalidate>
           <input type="hidden" name="_subject" id="fspSubject" value="">
           <input type="hidden" name="message" id="fspMessage" value="">
           <input type="hidden" name="_replyto" id="fspReplyTo" value="">
@@ -75,15 +66,12 @@
             <option value="Sports Consulting">Sports Consulting</option>
             <option value="Educational Consulting">Educational Consulting</option>
             <option value="Event Consulting">Event Consulting</option>
-
             <option value="AI Consulting">AI Consulting</option>
             <option value="Real Estate Consulting">Real Estate Consulting</option>
             <option value="Art Consulting">Art Consulting</option>
-
             <option value="Web Design">Web Design</option>
           </select>
 
-          <!-- INTAKE TAB (GATED) -->
           <div style="margin-top:14px;">
             <button
               type="button"
@@ -118,13 +106,11 @@
                   disabled
                   style="transform:scale(1.1); margin-right:8px;"
                 />
-                Intake Completed (Required before booking submission)
+                Intake Completed
               </label>
 
               <input type="hidden" id="intakeCompletedHidden" name="intake_completed" value="false" />
-
-              <!-- Hidden: we will compile all intake Q/A into this one field -->
-              <input type="hidden" id="intakeAnswersCompiled" name="intake_answers" value="">
+              <input type="hidden" id="intakeAnswersCompiled" name="intake_answers" value="" />
             </div>
           </div>
 
@@ -132,49 +118,11 @@
           <textarea id="details" name="additional_details" rows="5"
             placeholder="Any extra details that would help us prepare."></textarea>
 
-          <hr class="hr" />
-
-          <!-- PAYMENT REQUIRED -->
-          <h3 style="margin:0 0 10px 0;">Payment Required</h3>
-          <p class="note" style="margin-top:0;">
-            To confirm your booking request, please send payment via Cash App:
-            <strong>$jazeminemichae</strong>
-          </p>
-
-          <a class="button primary" href="https://cash.app/$jazeminemichae" target="_blank" rel="noopener">
-            Pay with Cash App
-          </a>
-
-          <label for="cashappConfirmation" style="margin-top:12px;">
-            Cash App Payment Confirmation (Transaction ID / Reference / Note)
-          </label>
-          <input
-            id="cashappConfirmation"
-            name="cashapp_confirmation"
-            type="text"
-            required
-            placeholder="Example: Cash App transaction ID or note you included"
-          />
-
-          <label style="margin-top:12px;">
-            <input
-              id="cashappPaidCheck"
-              name="cashapp_paid_confirmed"
-              type="checkbox"
-              required
-              style="transform:scale(1.1); margin-right:8px;"
-            />
-            I confirm I have sent payment via Cash App to <strong>$jazeminemichae</strong>.
-          </label>
-
           <button class="button primary" type="submit" id="submitBtn" disabled>
             Submit Booking Request
           </button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
-          <small id="jsLoaded" class="note" style="display:block; margin-top:10px; opacity:0.65;">
-            JavaScript status: loading…
-          </small>
         </form>
       </div>
     </div>
