@@ -1,5 +1,3 @@
-const CONFIRMATION_PAGE = "confirmation.html";
-
 const SERVICE_QUESTIONS = {
   "Security Consulting": [
     "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
@@ -73,12 +71,10 @@ function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
   for (let hour = startHour; hour <= endHour; hour++) {
     for (let min = 0; min < 60; min += stepMinutes) {
       if (hour === endHour && min > 0) break;
-
       const isPM = hour >= 12;
       const displayHour = ((hour + 11) % 12) + 1;
       const label = `${displayHour}:${pad(min)} ${isPM ? "PM" : "AM"}`;
       const value = `${pad(hour)}:${pad(min)}`;
-
       const opt = document.createElement("option");
       opt.value = value;
       opt.textContent = label;
@@ -90,7 +86,6 @@ function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
 function setMinDate() {
   const dateEl = $("date");
   if (!dateEl) return;
-
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -98,35 +93,22 @@ function setMinDate() {
   dateEl.min = `${yyyy}-${mm}-${dd}`;
 }
 
-function applyServiceFromQuery(selectEl) {
-  if (!selectEl) return;
-  const params = new URLSearchParams(window.location.search);
-  const service = params.get("service");
-  if (!service) return;
-
-  for (const opt of selectEl.options) {
-    if (opt.value === service) {
-      selectEl.value = service;
-      break;
-    }
-  }
-}
-
 function resetIntakeGate() {
   const completedCheck = $("intakeCompletedCheck");
   const hidden = $("intakeCompletedHidden");
   const status = $("intakeStatus");
+  const compiled = $("intakeAnswersCompiled");
 
   if (completedCheck) {
     completedCheck.checked = false;
     completedCheck.disabled = true;
   }
   if (hidden) hidden.value = "false";
+  if (compiled) compiled.value = "";
   if (status) {
     status.style.display = "none";
     status.textContent = "";
   }
-
   updateSubmitEnabled();
 }
 
@@ -141,7 +123,6 @@ function renderIntakeFields(serviceValue) {
 
   questions.forEach((q, idx) => {
     const qNum = idx + 1;
-
     const wrap = document.createElement("div");
     wrap.style.marginBottom = "12px";
 
@@ -151,11 +132,9 @@ function renderIntakeFields(serviceValue) {
 
     const textarea = document.createElement("textarea");
     textarea.id = `intake_q_${qNum}`;
-    textarea.name = `intake_q_${qNum}`; // not sent directly; compiled into one hidden field
     textarea.rows = 3;
     textarea.required = true;
     textarea.placeholder = "Type your answer here…";
-
     textarea.addEventListener("input", resetIntakeGate);
 
     wrap.appendChild(label);
@@ -183,18 +162,6 @@ function getIntakeAnswers(serviceValue) {
   });
 }
 
-function paymentGateOk() {
-  const ref = $("cashappConfirmation");
-  const check = $("cashappPaidCheck");
-  if (!ref || !check) return false;
-  return ref.value.trim().length >= 4 && check.checked === true;
-}
-
-function intakeCompletedOk() {
-  const hidden = $("intakeCompletedHidden");
-  return hidden && hidden.value === "true";
-}
-
 function formBasicsOk() {
   const name = $("name");
   const email = $("email");
@@ -214,10 +181,15 @@ function formBasicsOk() {
   );
 }
 
+function intakeCompletedOk() {
+  const hidden = $("intakeCompletedHidden");
+  return hidden && hidden.value === "true";
+}
+
 function updateSubmitEnabled() {
   const submitBtn = $("submitBtn");
   if (!submitBtn) return;
-  submitBtn.disabled = !(formBasicsOk() && intakeCompletedOk() && paymentGateOk());
+  submitBtn.disabled = !(formBasicsOk() && intakeCompletedOk());
 }
 
 function showIntakeStatus(msg) {
@@ -271,7 +243,6 @@ function wireSaveIntake() {
       return;
     }
 
-    // Compile intake answers into a single text block for email
     const intakePairs = getIntakeAnswers(serviceValue);
     const intakeText = intakePairs
       .map((x, i) => `${i + 1}) ${x.question}\nAnswer: ${x.answer}`)
@@ -294,7 +265,7 @@ function wireSaveIntake() {
 }
 
 function wireEnableChecks() {
-  const ids = ["name","email","phone","date","time","service","cashappConfirmation","cashappPaidCheck"];
+  const ids = ["name","email","phone","date","time","service"];
   ids.forEach((id) => {
     const el = $(id);
     if (!el) return;
@@ -317,12 +288,8 @@ function buildFormspreeHiddenFields() {
   const time = $("time").value;
   const details = $("details").value.trim();
   const intakeAnswers = $("intakeAnswersCompiled").value || "";
-  const cashRef = $("cashappConfirmation").value.trim();
-  const cashPaid = $("cashappPaidCheck").checked ? "Yes" : "No";
 
-  // Ensure redirect points to your confirmation page on the same site
-  if (redirectEl) redirectEl.value = CONFIRMATION_PAGE;
-
+  if (redirectEl) redirectEl.value = "confirmation.html";
   if (subjectEl) subjectEl.value = `New Booking Request - ${serviceValue}`;
   if (replyToEl) replyToEl.value = email;
 
@@ -334,9 +301,7 @@ function buildFormspreeHiddenFields() {
     `Time: ${time}\n` +
     `Service: ${serviceValue}\n\n` +
     `--- Intake Answers ---\n${intakeAnswers}\n\n` +
-    `Additional Details: ${details}\n\n` +
-    `CashApp Confirmation: ${cashRef}\n` +
-    `CashApp Paid Confirmed: ${cashPaid}`;
+    `Additional Details: ${details}`;
 
   if (msgEl) msgEl.value = message;
 }
@@ -346,34 +311,25 @@ function wireBookingSubmit() {
   if (!form) return;
 
   form.addEventListener("submit", (e) => {
-    // Always block first; only allow submit after gates
     e.preventDefault();
 
     if (!formBasicsOk()) return showFormStatus("Please complete all required booking fields.");
     if (!intakeCompletedOk()) return showFormStatus("Please complete the Service Intake Questions before submitting the booking.");
-    if (!paymentGateOk()) return showFormStatus("Payment confirmation is required before submitting the booking.");
 
-    // Build hidden fields and submit natively to Formspree
     showFormStatus("Submitting…");
     buildFormspreeHiddenFields();
-
-    // Native submit (most reliable)
     form.submit();
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const jsLoaded = $("jsLoaded");
-  if (jsLoaded) jsLoaded.textContent = "JavaScript status: loaded ✓";
-
-  const serviceSelect = $("service");
   const bookingForm = $("bookingForm");
+  const serviceSelect = $("service");
+
   if (!bookingForm || !serviceSelect) return;
 
   buildTimeOptions($("time"), 10, 20, 15);
   setMinDate();
-  applyServiceFromQuery(serviceSelect);
-
   wireIntakeTab();
   renderIntakeFields(serviceSelect.value);
 
