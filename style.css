@@ -2,13 +2,14 @@
   --red:#B22234;
   --navy:#0A3161;
   --yellow:#FFD700;
-
   --bg:#000000;
-  --panel: rgba(10,10,10,0.88);
-  --border: rgba(255,215,0,0.18);
-
+  --panel: rgba(8,8,8,0.86);
+  --border: rgba(255,215,0,0.20);
   --text:#FFD700;
-  --muted:#d6c86b;
+  --muted:#e0d27a;
+  --glow1: rgba(255,215,0,0.16);
+  --glow2: rgba(178,34,52,0.14);
+  --glow3: rgba(10,49,97,0.18);
 }
 
 *{box-sizing:border-box}
@@ -19,18 +20,19 @@ body{
   background: var(--bg);
 }
 
-/* SOLDIER BACKGROUND IMAGE + DARK OVERLAY */
 body::before{
   content:"";
   position:fixed;
   inset:0;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.88) 60%, rgba(0,0,0,0.92) 100%),
+    radial-gradient(circle at 15% 20%, var(--glow1) 0%, transparent 28%),
+    radial-gradient(circle at 85% 15%, var(--glow2) 0%, transparent 26%),
+    radial-gradient(circle at 50% 85%, var(--glow3) 0%, transparent 32%),
+    linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.82) 60%, rgba(0,0,0,0.90) 100%),
     url("soldiers-bg.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: contrast(1.05);
   z-index:-1;
 }
 
@@ -59,7 +61,6 @@ a{color:inherit}
   gap:12px;
 }
 
-/* Logo image next to badge */
 .brand-logo{
   width:42px;
   height:42px;
@@ -77,11 +78,7 @@ a{color:inherit}
   color: var(--yellow);
 }
 
-.brand h1{
-  margin:0;
-  font-size:1.15rem;
-  letter-spacing:0.4px;
-}
+.brand h1{margin:0;font-size:1.15rem;letter-spacing:0.4px}
 .brand small{display:block;color: var(--muted)}
 
 .nav{
@@ -102,7 +99,22 @@ a{color:inherit}
 .nav a.active{background: var(--red); border-color: var(--red); color: #fff}
 
 .hero{
-  padding:56px 0 24px 0;
+  padding:64px 0 32px 0;
+}
+
+.hero-vibrant{
+  position:relative;
+}
+
+.hero-vibrant::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(135deg, rgba(255,215,0,0.05), transparent 45%),
+    linear-gradient(225deg, rgba(178,34,52,0.10), transparent 40%),
+    linear-gradient(315deg, rgba(10,49,97,0.10), transparent 40%);
+  pointer-events:none;
 }
 
 .hero-grid{
@@ -117,8 +129,8 @@ a{color:inherit}
 
 .kicker{
   display:inline-block;
-  background: rgba(255,215,0,0.08);
-  border: 1px solid rgba(255,215,0,0.25);
+  background: rgba(255,215,0,0.10);
+  border: 1px solid rgba(255,215,0,0.30);
   padding:6px 10px;
   border-radius:999px;
   font-weight:900;
@@ -128,8 +140,9 @@ a{color:inherit}
 
 .hero h2{
   margin:12px 0 10px 0;
-  font-size:2rem;
+  font-size:2.2rem;
   letter-spacing:0.2px;
+  text-shadow: 0 0 18px rgba(255,215,0,0.14);
 }
 
 .hero p{
@@ -178,12 +191,12 @@ a{color:inherit}
   border:1px solid var(--border);
   border-radius:18px;
   padding:18px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.38);
   backdrop-filter: blur(6px);
 }
 
 .section{padding:28px 0}
-.section h3{margin:0 0 12px 0;font-size:1.35rem; color: var(--yellow)}
+.section h3{margin:0 0 12px 0;font-size:1.35rem;color: var(--yellow)}
 
 .grid{
   display:grid;
@@ -193,22 +206,10 @@ a{color:inherit}
 @media (max-width: 980px){ .grid{grid-template-columns: repeat(2, 1fr);} }
 @media (max-width: 640px){ .grid{grid-template-columns: 1fr;} }
 
-.service-card h4{margin:0 0 8px 0; color: var(--yellow)}
+.service-card h4{margin:0 0 8px 0;color: var(--yellow)}
 .service-card p{margin:0 0 10px 0;color: var(--muted);line-height:1.55}
 
-.tag{
-  display:inline-block;
-  font-size:0.85rem;
-  padding:6px 10px;
-  border-radius:999px;
-  background: rgba(10,49,97,0.35);
-  border:1px solid rgba(255,215,0,0.22);
-  color: var(--yellow);
-  font-weight:900;
-  margin-bottom:10px;
-}
-
-.form label{display:block;font-weight:900;margin:10px 0 6px; color: var(--yellow)}
+.form label{display:block;font-weight:900;margin:10px 0 6px;color: var(--yellow)}
 .form input,.form textarea,.form select{
   width:100%;
   padding:12px;
@@ -236,20 +237,16 @@ a{color:inherit}
 }
 .footer small{color: var(--muted)}
 
-/* Affiliate logo only (no link) */
-.affiliate-logo{
-  width:54px;
-  height:54px;
+.affiliate-box{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.affiliate-logo-large{
+  width:64px;
+  height:64px;
   border-radius:14px;
   border:1px solid rgba(255,215,0,0.25);
   object-fit:cover;
   background: rgba(0,0,0,0.35);
 }
-
-/* Banner card style for notices */
-.banner{
-  display:flex;
-  align-items:flex-start;
-  gap:12px;
-}
-.banner strong{color: var(--yellow)}
