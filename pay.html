@@ -7,10 +7,11 @@
   <title>Pay Online | We Services LLC</title>
 
   <link rel="stylesheet" href="style.css" />
+
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID_HERE&currency=USD"></script>
 </head>
 
 <body>
-
   <header class="topbar">
     <div class="container row">
       <div class="brand">
@@ -35,32 +36,19 @@
 
   <main class="payment-page">
     <section class="payment-box">
-      <h2>Secure Online Payments</h2>
+      <h2>Secure Debit / Credit Card Payment</h2>
 
       <p>
-        Customers can pay securely using PayPal, debit card, or credit card.
+        Complete payment first. After successful payment, your booking request will automatically submit.
       </p>
 
-      <a
-        href="https://www.paypal.com/qrcodes/managed/707fed50-5459-42cf-b295-f15d2dceaa98?utm_source=consapp_download"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img
-          src="paypal-qr.jpeg"
-          alt="We Services LLC PayPal QR Code"
-          class="paypal-qr"
-        />
-      </a>
+      <p class="payment-note">
+        Consultation payment: <strong>$50.00</strong>
+      </p>
 
-      <a
-        class="pay-button"
-        href="https://www.paypal.com/qrcodes/managed/707fed50-5459-42cf-b295-f15d2dceaa98?utm_source=consapp_download"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Pay with Debit or Credit Card
-      </a>
+      <div id="paypal-button-container"></div>
+
+      <p id="paymentStatus" class="payment-note"></p>
 
       <p class="payment-note">
         We Services LLC does not collect, process, or store debit or credit card information.
@@ -75,5 +63,93 @@
     </div>
   </footer>
 
+  <script>
+    const FORM_ENDPOINT = "https://formspree.io/f/mzdavobw";
+
+    const bookingData = JSON.parse(localStorage.getItem("weservices_booking"));
+    const paymentStatus = document.getElementById("paymentStatus");
+
+    if (!bookingData) {
+      paymentStatus.innerText =
+        "No booking request found. Please complete the booking form first.";
+    } else {
+      paypal.Buttons({
+        style: {
+          layout: "vertical",
+          color: "gold",
+          shape: "rect",
+          label: "pay"
+        },
+
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              description: bookingData.service || "We Services LLC Consultation",
+              amount: {
+                value: "50.00"
+              }
+            }]
+          });
+        },
+
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(async function(details) {
+            paymentStatus.innerText =
+              "Payment successful. Submitting booking request...";
+
+            const formData = new FormData();
+
+            formData.append("_subject", "New Paid Booking Request - We Services LLC");
+            formData.append("payment_status", "Paid");
+            formData.append("paypal_order_id", data.orderID);
+
+            if (details.payer && details.payer.name) {
+              formData.append(
+                "paypal_payer_name",
+                `${details.payer.name.given_name || ""} ${details.payer.name.surname || ""}`
+              );
+            }
+
+            formData.append("name", bookingData.name);
+            formData.append("email", bookingData.email);
+            formData.append("_replyto", bookingData.email);
+            formData.append("phone", bookingData.phone);
+            formData.append("preferred_date", bookingData.preferred_date);
+            formData.append("preferred_time", bookingData.preferred_time);
+            formData.append("service", bookingData.service);
+            formData.append("additional_details", bookingData.additional_details);
+            formData.append("intake_completed", bookingData.intake_completed);
+            formData.append("intake_answers", bookingData.intake_answers);
+
+            const response = await fetch(FORM_ENDPOINT, {
+              method: "POST",
+              body: formData,
+              headers: {
+                "Accept": "application/json"
+              }
+            });
+
+            if (response.ok) {
+              localStorage.removeItem("weservices_booking");
+              window.location.href = "confirmation.html";
+            } else {
+              paymentStatus.innerText =
+                "Payment was successful, but the booking request did not submit. Please contact We Services LLC.";
+            }
+          });
+        },
+
+        onCancel: function() {
+          paymentStatus.innerText =
+            "Payment was canceled. Your booking request has not been submitted.";
+        },
+
+        onError: function() {
+          paymentStatus.innerText =
+            "Payment error. Please try again.";
+        }
+      }).render("#paypal-button-container");
+    }
+  </script>
 </body>
 </html>
