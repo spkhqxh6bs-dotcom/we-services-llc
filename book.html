@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Book a Service | We Services LLC</title>
-
   <link rel="stylesheet" href="style.css" />
-
   <script defer src="script.js"></script>
 </head>
 
 <body>
-
   <header class="topbar">
     <div class="container row">
       <div class="brand">
@@ -40,23 +36,11 @@
       <h3>Booking Request</h3>
 
       <p class="note">
-        Complete the intake and submit your request. After submission, you will be sent directly to secure debit or credit card payment through PayPal.
+        Complete the booking request below. You will continue to secure debit or credit card payment before the request is submitted.
       </p>
 
       <div class="card">
-
-        <form
-          id="bookingForm"
-          class="form"
-          action="https://formspree.io/f/mzdavobw"
-          method="POST"
-          novalidate
-        >
-
-          <input type="hidden" name="_subject" id="fspSubject" value="">
-          <input type="hidden" name="message" id="fspMessage" value="">
-          <input type="hidden" name="_replyto" id="fspReplyTo" value="">
-          <input type="hidden" name="_redirect" id="fspRedirect" value="confirmation.html">
+        <form id="bookingForm" class="form" novalidate>
 
           <label for="name">Full Name</label>
           <input id="name" name="name" type="text" required placeholder="Your full name" />
@@ -105,7 +89,6 @@
               style="margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
             >
               <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
-
               <div id="intakeFields"></div>
 
               <button type="button" id="saveIntakeBtn" class="button primary" style="margin-top:8px;">
@@ -139,13 +122,11 @@
           ></textarea>
 
           <button class="button primary" type="submit" id="submitBtn" disabled>
-            Continue to Debit/Credit Card Payment
+            Continue to Secure Payment
           </button>
 
           <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
-
         </form>
-
       </div>
     </div>
   </section>
@@ -160,33 +141,25 @@
     document.addEventListener("DOMContentLoaded", () => {
       const bookingForm = document.getElementById("bookingForm");
 
-      bookingForm.addEventListener("submit", async function(event) {
+      bookingForm.addEventListener("submit", function(event) {
         event.preventDefault();
 
-        const formData = new FormData(bookingForm);
+        const bookingData = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("phone").value,
+          preferred_date: document.getElementById("date").value,
+          preferred_time: document.getElementById("time").value,
+          service: document.getElementById("service").value,
+          additional_details: document.getElementById("details").value,
+          intake_completed: document.getElementById("intakeCompletedHidden").value,
+          intake_answers: document.getElementById("intakeAnswersCompiled").value
+        };
 
-        try {
-          const response = await fetch(bookingForm.action, {
-            method: "POST",
-            body: formData,
-            headers: {
-              "Accept": "application/json"
-            }
-          });
-
-          if (response.ok) {
-            window.location.href =
-              "https://www.paypal.com/qrcodes/managed/707fed50-5459-42cf-b295-f15d2dceaa98?utm_source=consapp_download";
-          } else {
-            alert("There was an issue submitting your booking request. Please try again.");
-          }
-
-        } catch (error) {
-          alert("Network error. Please try again.");
-        }
+        localStorage.setItem("weservices_booking", JSON.stringify(bookingData));
+        window.location.href = "pay.html";
       });
     });
   </script>
-
 </body>
 </html>
