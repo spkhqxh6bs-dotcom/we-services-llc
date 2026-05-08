@@ -3,20 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Book a Service | We Services LLC</title>
+
   <link rel="stylesheet" href="style.css" />
+
   <script defer src="script.js"></script>
 </head>
+
 <body>
+
   <header class="topbar">
+
     <div class="container row">
+
       <div class="brand">
-        <img class="brand-logo" src="logo.png" alt="We Services LLC logo">
+
+        <img
+          class="brand-logo"
+          src="logo.png"
+          alt="We Services LLC logo"
+        >
+
         <div class="brand-badge">WE</div>
+
         <div>
           <h1>We Services LLC</h1>
           <small>We make things happen</small>
         </div>
+
       </div>
 
       <nav class="nav">
@@ -25,54 +40,156 @@
         <a href="about.html">About</a>
         <a class="active" href="book.html">Book</a>
         <a href="contact.html">Contact</a>
+        <a href="pay.html">Pay Online</a>
       </nav>
+
     </div>
+
   </header>
 
   <section class="section">
+
     <div class="container">
+
       <h3>Booking Request</h3>
+
       <p class="note">
-        Complete the intake and submit your request first. You’ll be sent to card payment immediately after submission.
+        Complete the intake and submit your request first.
+        You’ll be sent to secure debit / credit card payment immediately after submission.
       </p>
 
       <div class="card">
-        <form id="bookingForm" class="form" action="https://formspree.io/f/mzdavobw" method="POST" novalidate>
+
+        <div class="booking-payment-banner">
+
+          <h4>Secure Payments Accepted</h4>
+
+          <p class="note">
+            We accept secure online payments through PayPal,
+            including debit cards, credit cards, and PayPal payments.
+          </p>
+
+          <a class="button primary"
+             href="pay.html">
+             Pay Online
+          </a>
+
+        </div>
+
+        <hr class="hr" />
+
+        <form
+          id="bookingForm"
+          class="form"
+          action="https://formspree.io/f/mzdavobw"
+          method="POST"
+          novalidate
+        >
+
           <input type="hidden" name="_subject" id="fspSubject" value="">
           <input type="hidden" name="message" id="fspMessage" value="">
           <input type="hidden" name="_replyto" id="fspReplyTo" value="">
           <input type="hidden" name="_redirect" id="fspRedirect" value="confirmation.html">
 
           <label for="name">Full Name</label>
-          <input id="name" name="name" type="text" required placeholder="Your full name" />
+
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            placeholder="Your full name"
+          />
 
           <label for="email">Email Address</label>
-          <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            placeholder="you@example.com"
+          />
 
           <label for="phone">Phone Number</label>
-          <input id="phone" name="phone" type="tel" required placeholder="(555) 555-5555" />
+
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            required
+            placeholder="(555) 555-5555"
+          />
 
           <label for="date">Preferred Date</label>
-          <input id="date" name="preferred_date" type="date" required />
 
-          <label for="time">Preferred Time (10:00 AM – 8:00 PM)</label>
-          <select id="time" name="preferred_time" required></select>
+          <input
+            id="date"
+            name="preferred_date"
+            type="date"
+            required
+          />
+
+          <label for="time">
+            Preferred Time (10:00 AM – 8:00 PM)
+          </label>
+
+          <select
+            id="time"
+            name="preferred_time"
+            required
+          ></select>
 
           <label for="service">Service Requested</label>
-          <select id="service" name="service" required>
-            <option value="Security Consulting">Security Consulting</option>
-            <option value="Business Consulting">Business Consulting</option>
-            <option value="Couples Consulting">Couples Consulting</option>
-            <option value="Sports Consulting">Sports Consulting</option>
-            <option value="Educational Consulting">Educational Consulting</option>
-            <option value="Event Consulting">Event Consulting</option>
-            <option value="AI Consulting">AI Consulting</option>
-            <option value="Real Estate Consulting">Real Estate Consulting</option>
-            <option value="Art Consulting">Art Consulting</option>
-            <option value="Web Design">Web Design</option>
+
+          <select
+            id="service"
+            name="service"
+            required
+          >
+            <option value="Security Consulting">
+              Security Consulting
+            </option>
+
+            <option value="Business Consulting">
+              Business Consulting
+            </option>
+
+            <option value="Couples Consulting">
+              Couples Consulting
+            </option>
+
+            <option value="Sports Consulting">
+              Sports Consulting
+            </option>
+
+            <option value="Educational Consulting">
+              Educational Consulting
+            </option>
+
+            <option value="Event Consulting">
+              Event Consulting
+            </option>
+
+            <option value="AI Consulting">
+              AI Consulting
+            </option>
+
+            <option value="Real Estate Consulting">
+              Real Estate Consulting
+            </option>
+
+            <option value="Art Consulting">
+              Art Consulting
+            </option>
+
+            <option value="Web Design">
+              Web Design
+            </option>
           </select>
 
           <div style="margin-top:14px;">
+
             <button
               type="button"
               id="intakeToggleBtn"
@@ -89,16 +206,32 @@
               hidden
               style="margin-top:12px; padding:12px; border:1px solid rgba(255,215,0,0.25); border-radius:14px; background:rgba(0,0,0,0.25);"
             >
-              <p id="intakeTitle" class="note" style="margin:0 0 10px 0; font-weight:700;"></p>
+
+              <p
+                id="intakeTitle"
+                class="note"
+                style="margin:0 0 10px 0; font-weight:700;"
+              ></p>
+
               <div id="intakeFields"></div>
 
-              <button type="button" id="saveIntakeBtn" class="button primary" style="margin-top:8px;">
+              <button
+                type="button"
+                id="saveIntakeBtn"
+                class="button primary"
+                style="margin-top:8px;"
+              >
                 Save Intake Answers
               </button>
 
-              <p id="intakeStatus" class="note" style="margin-top:10px; display:none;"></p>
+              <p
+                id="intakeStatus"
+                class="note"
+                style="margin-top:10px; display:none;"
+              ></p>
 
               <label style="margin-top:12px; display:block;">
+
                 <input
                   id="intakeCompletedCheck"
                   name="intake_completed_checkbox"
@@ -106,32 +239,81 @@
                   disabled
                   style="transform:scale(1.1); margin-right:8px;"
                 />
+
                 Intake Completed
+
               </label>
 
-              <input type="hidden" id="intakeCompletedHidden" name="intake_completed" value="false" />
-              <input type="hidden" id="intakeAnswersCompiled" name="intake_answers" value="" />
+              <input
+                type="hidden"
+                id="intakeCompletedHidden"
+                name="intake_completed"
+                value="false"
+              />
+
+              <input
+                type="hidden"
+                id="intakeAnswersCompiled"
+                name="intake_answers"
+                value=""
+              />
+
             </div>
+
           </div>
 
-          <label for="details">Additional Details (optional)</label>
-          <textarea id="details" name="additional_details" rows="5"
-            placeholder="Any extra details that would help us prepare."></textarea>
+          <label for="details">
+            Additional Details (optional)
+          </label>
 
-          <button class="button primary" type="submit" id="submitBtn" disabled>
-            Submit Booking Request
-          </button>
+          <textarea
+            id="details"
+            name="additional_details"
+            rows="5"
+            placeholder="Any extra details that would help us prepare."
+          ></textarea>
 
-          <p id="formStatus" class="note" style="margin-top:10px; display:none;"></p>
+          <div class="booking-actions">
+
+            <button
+              class="button primary"
+              type="submit"
+              id="submitBtn"
+              disabled
+            >
+              Submit Booking Request
+            </button>
+
+            <a
+              class="button ghost"
+              href="pay.html"
+            >
+              Pay Online
+            </a>
+
+          </div>
+
+          <p
+            id="formStatus"
+            class="note"
+            style="margin-top:10px; display:none;"
+          ></p>
+
         </form>
+
       </div>
+
     </div>
+
   </section>
 
   <footer class="footer">
+
     <div class="container">
       <small>© 2026 We Services LLC</small>
     </div>
+
   </footer>
+
 </body>
 </html>
