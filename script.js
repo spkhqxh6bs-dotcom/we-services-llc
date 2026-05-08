@@ -1,345 +1,295 @@
-const SERVICE_QUESTIONS = {
-  "Security Consulting": [
-    "What type of security are you seeking guidance on (personal, event, business, risk assessment, other)?",
-    "Is this proactive planning or a response to an incident?",
-    "What concerns are most important to you right now?",
-    "Are there any current vulnerabilities or known risks?"
-  ],
-  "Business Consulting": [
-    "What type of business do you operate?",
-    "What stage is your business in (startup, growing, established, struggling)?",
-    "What specific area needs improvement (marketing, operations, staffing, finances, strategy)?",
-    "What outcome would make this session successful for you?"
-  ],
-  "Couples Consulting": [
-    "What is the main challenge you’d like to address?",
-    "How long has this issue been present?",
-    "Are both parties attending the consultation (yes/no)?",
-    "Are you seeking communication improvement, conflict resolution, goal alignment, or pre-marital planning?"
-  ],
-  "Sports Consulting": [
-    "What sport is this for?",
-    "What is the athlete’s age and current level (recreational, school, collegiate, professional)?",
-    "What area needs improvement (performance, mindset, recruiting, training structure)?",
-    "What is your goal timeline (next game/season/tryout/date)?"
-  ],
-  "Educational Consulting": [
-    "What is the student’s grade level?",
-    "What are the primary academic concerns or goals?",
-    "Is this for tutoring strategy, academic planning, or career planning?",
-    "Are there IEP/504 plans involved (yes/no)?"
-  ],
-  "Event Consulting": [
-    "What type of event is it?",
-    "What is the expected guest count?",
-    "What is the event date and location?",
-    "What is your budget range and what level of help do you need (decor, coordination, full planning)?"
-  ],
-  "AI Consulting": [
-    "What industry are you in?",
-    "What problem are you trying to solve with AI?",
-    "Are you looking for automation, content generation, data analysis, or workflow improvement?",
-    "What tools are you currently using (if any)?"
-  ],
-  "Real Estate Consulting": [
-    "Are you a buyer, seller, or investor?",
-    "Residential or commercial?",
-    "What is your timeline (e.g., 30/60/90 days)?",
-    "What is your budget range and are you a first-time buyer/investor (yes/no)?"
-  ],
-  "Art Consulting": [
-    "Are you an artist or collector?",
-    "What medium (painting, digital, sculpture, etc.)?",
-    "Are you seeking branding, exhibition planning, sales strategy, or portfolio review?",
-    "Do you currently have an online presence (yes/no)?"
-  ],
-  "Web Design": [
-    "Is this a new website or a redesign?",
-    "Do you already own a domain name and hosting (yes/no)?",
-    "What features do you need (booking, payments, portfolio, e-commerce, etc.)?",
-    "What is your target launch date and any example sites you like?"
-  ]
-};
+document.addEventListener("DOMContentLoaded", () => {
+  const bookingForm = document.getElementById("bookingForm");
 
-function $(id) { return document.getElementById(id); }
-
-function buildTimeOptions(selectEl, startHour, endHour, stepMinutes) {
-  if (!selectEl) return;
-  selectEl.innerHTML = "";
-  const pad = (n) => String(n).padStart(2, "0");
-
-  for (let hour = startHour; hour <= endHour; hour++) {
-    for (let min = 0; min < 60; min += stepMinutes) {
-      if (hour === endHour && min > 0) break;
-      const isPM = hour >= 12;
-      const displayHour = ((hour + 11) % 12) + 1;
-      const label = `${displayHour}:${pad(min)} ${isPM ? "PM" : "AM"}`;
-      const value = `${pad(hour)}:${pad(min)}`;
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = label;
-      selectEl.appendChild(opt);
-    }
+  if (!bookingForm) {
+    return;
   }
-}
 
-function setMinDate() {
-  const dateEl = $("date");
-  if (!dateEl) return;
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  dateEl.min = `${yyyy}-${mm}-${dd}`;
-}
+  const timeSelect = document.getElementById("time");
+  const serviceSelect = document.getElementById("service");
+  const submitBtn = document.getElementById("submitBtn");
 
-function resetIntakeGate() {
-  const completedCheck = $("intakeCompletedCheck");
-  const hidden = $("intakeCompletedHidden");
-  const status = $("intakeStatus");
-  const compiled = $("intakeAnswersCompiled");
+  const intakeToggleBtn = document.getElementById("intakeToggleBtn");
+  const intakePanel = document.getElementById("intakePanel");
+  const intakeTitle = document.getElementById("intakeTitle");
+  const intakeFields = document.getElementById("intakeFields");
+  const saveIntakeBtn = document.getElementById("saveIntakeBtn");
+  const intakeStatus = document.getElementById("intakeStatus");
+  const intakeCompletedCheck = document.getElementById("intakeCompletedCheck");
+  const intakeCompletedHidden = document.getElementById("intakeCompletedHidden");
+  const intakeAnswersCompiled = document.getElementById("intakeAnswersCompiled");
+  const formStatus = document.getElementById("formStatus");
 
-  if (completedCheck) {
-    completedCheck.checked = false;
-    completedCheck.disabled = true;
-  }
-  if (hidden) hidden.value = "false";
-  if (compiled) compiled.value = "";
-  if (status) {
-    status.style.display = "none";
-    status.textContent = "";
-  }
-  updateSubmitEnabled();
-}
+  const intakeQuestions = {
+    "Security Consulting": [
+      "What security concern or situation do you need help with?",
+      "Is this for personal, business, event, or property security?",
+      "What outcome are you hoping to achieve from the consultation?"
+    ],
 
-function renderIntakeFields(serviceValue) {
-  const titleEl = $("intakeTitle");
-  const container = $("intakeFields");
-  if (!titleEl || !container) return;
+    "Business Consulting": [
+      "What type of business or idea do you need help with?",
+      "What is the main problem you are trying to solve?",
+      "What goal do you want to reach after the consultation?"
+    ],
 
-  const questions = SERVICE_QUESTIONS[serviceValue] || [];
-  titleEl.textContent = `Questions for: ${serviceValue}`;
-  container.innerHTML = "";
+    "Couples Consulting": [
+      "What topic or concern would you like support with?",
+      "Are both parties aware of this consultation request?",
+      "What would a successful consultation look like for you?"
+    ],
 
-  questions.forEach((q, idx) => {
-    const qNum = idx + 1;
-    const wrap = document.createElement("div");
-    wrap.style.marginBottom = "12px";
+    "Sports Consulting": [
+      "What sport or athletic area do you need help with?",
+      "Is this for training, performance, recruitment, mindset, or planning?",
+      "What goal are you working toward?"
+    ],
 
-    const label = document.createElement("label");
-    label.setAttribute("for", `intake_q_${qNum}`);
-    label.textContent = `${qNum}. ${q}`;
+    "Educational Consulting": [
+      "What education goal do you need help with?",
+      "Is this for school planning, coursework, career direction, or skills development?",
+      "What deadline or target date are you working with?"
+    ],
 
-    const textarea = document.createElement("textarea");
-    textarea.id = `intake_q_${qNum}`;
-    textarea.rows = 3;
-    textarea.required = true;
-    textarea.placeholder = "Type your answer here…";
-    textarea.addEventListener("input", resetIntakeGate);
+    "Event Consulting": [
+      "What type of event are you planning?",
+      "What is the expected date and location of the event?",
+      "What kind of support do you need most?"
+    ],
 
-    wrap.appendChild(label);
-    wrap.appendChild(textarea);
-    container.appendChild(wrap);
-  });
+    "AI Consulting": [
+      "What are you trying to use AI for?",
+      "Is this for personal use, business use, school, or automation?",
+      "What task would you like AI to help improve?"
+    ],
 
-  resetIntakeGate();
-}
+    "Real Estate Consulting": [
+      "What real estate goal are you working toward?",
+      "Are you buying, selling, renting, investing, or planning?",
+      "What is your biggest question or concern right now?"
+    ],
 
-function intakeAllAnswered(serviceValue) {
-  const questions = SERVICE_QUESTIONS[serviceValue] || [];
-  for (let i = 0; i < questions.length; i++) {
-    const field = $(`intake_q_${i + 1}`);
-    if (!field || field.value.trim().length === 0) return false;
-  }
-  return true;
-}
+    "Art Consulting": [
+      "What type of art or creative project do you need help with?",
+      "Do you need help with branding, presentation, pricing, or promotion?",
+      "What outcome are you hoping for?"
+    ],
 
-function getIntakeAnswers(serviceValue) {
-  const questions = SERVICE_QUESTIONS[serviceValue] || [];
-  return questions.map((q, idx) => {
-    const field = $(`intake_q_${idx + 1}`);
-    return { question: q, answer: field ? field.value.trim() : "" };
-  });
-}
+    "Web Design": [
+      "What type of website do you need?",
+      "How many pages or sections do you want?",
+      "Do you already have a logo, pictures, domain, or written content?"
+    ]
+  };
 
-function formBasicsOk() {
-  const name = $("name");
-  const email = $("email");
-  const phone = $("phone");
-  const date = $("date");
-  const time = $("time");
-  const service = $("service");
-  if (!name || !email || !phone || !date || !time || !service) return false;
-
-  return (
-    name.value.trim().length > 0 &&
-    email.value.trim().length > 0 &&
-    phone.value.trim().length > 0 &&
-    date.value.trim().length > 0 &&
-    time.value.trim().length > 0 &&
-    service.value.trim().length > 0
-  );
-}
-
-function intakeCompletedOk() {
-  const hidden = $("intakeCompletedHidden");
-  return hidden && hidden.value === "true";
-}
-
-function updateSubmitEnabled() {
-  const submitBtn = $("submitBtn");
-  if (!submitBtn) return;
-  submitBtn.disabled = !(formBasicsOk() && intakeCompletedOk());
-}
-
-function showIntakeStatus(msg) {
-  const el = $("intakeStatus");
-  if (!el) return;
-  el.style.display = "block";
-  el.textContent = msg;
-}
-
-function showFormStatus(msg) {
-  const el = $("formStatus");
-  if (!el) return;
-  el.style.display = "block";
-  el.textContent = msg;
-}
-
-function wireIntakeTab() {
-  const btn = $("intakeToggleBtn");
-  const panel = $("intakePanel");
-  if (!btn || !panel) return;
-
-  btn.addEventListener("click", () => {
-    const isOpen = !panel.hidden;
-    panel.hidden = isOpen;
-    btn.setAttribute("aria-expanded", (!isOpen).toString());
-    btn.textContent = isOpen
-      ? "Service Intake Questions (Click to Open)"
-      : "Service Intake Questions (Click to Close)";
-  });
-}
-
-function wireSaveIntake() {
-  const saveBtn = $("saveIntakeBtn");
-  const completedCheck = $("intakeCompletedCheck");
-  const hidden = $("intakeCompletedHidden");
-  const serviceSelect = $("service");
-  const compiled = $("intakeAnswersCompiled");
-
-  if (!saveBtn || !completedCheck || !hidden || !serviceSelect || !compiled) return;
-
-  saveBtn.addEventListener("click", () => {
-    const serviceValue = serviceSelect.value;
-
-    if (!intakeAllAnswered(serviceValue)) {
-      showIntakeStatus("Please answer every intake question before saving.");
-      completedCheck.disabled = true;
-      completedCheck.checked = false;
-      hidden.value = "false";
-      compiled.value = "";
-      updateSubmitEnabled();
+  function populateTimes() {
+    if (!timeSelect) {
       return;
     }
 
-    const intakePairs = getIntakeAnswers(serviceValue);
-    const intakeText = intakePairs
-      .map((x, i) => `${i + 1}) ${x.question}\nAnswer: ${x.answer}`)
-      .join("\n\n");
+    timeSelect.innerHTML = "";
 
-    compiled.value = intakeText;
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Select a time";
+    timeSelect.appendChild(defaultOption);
 
-    showIntakeStatus("Intake answers saved. Please check “Intake Completed” to continue.");
-    completedCheck.disabled = false;
-    completedCheck.checked = false;
-    hidden.value = "false";
-    updateSubmitEnabled();
-  });
+    for (let hour = 10; hour <= 20; hour++) {
+      const option = document.createElement("option");
 
-  completedCheck.addEventListener("change", () => {
-    hidden.value = completedCheck.checked ? "true" : "false";
-    showIntakeStatus(completedCheck.checked ? "Intake marked as completed." : "Intake completion unchecked.");
-    updateSubmitEnabled();
-  });
-}
+      const displayHour = hour > 12 ? hour - 12 : hour;
+      const amPm = hour >= 12 ? "PM" : "AM";
+      const timeLabel = `${displayHour}:00 ${amPm}`;
 
-function wireEnableChecks() {
-  const ids = ["name","email","phone","date","time","service"];
-  ids.forEach((id) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener("input", updateSubmitEnabled);
-    el.addEventListener("change", updateSubmitEnabled);
-  });
-}
+      option.value = timeLabel;
+      option.textContent = timeLabel;
 
-function buildFormspreeHiddenFields() {
-  const subjectEl = $("fspSubject");
-  const msgEl = $("fspMessage");
-  const replyToEl = $("fspReplyTo");
-  const redirectEl = $("fspRedirect");
+      timeSelect.appendChild(option);
+    }
+  }
 
-  const serviceValue = $("service").value;
-  const name = $("name").value.trim();
-  const email = $("email").value.trim();
-  const phone = $("phone").value.trim();
-  const date = $("date").value;
-  const time = $("time").value;
-  const details = $("details").value.trim();
-  const intakeAnswers = $("intakeAnswersCompiled").value || "";
+  function applyServiceFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedService = params.get("service");
 
-  if (redirectEl) redirectEl.value = "confirmation.html";
-  if (subjectEl) subjectEl.value = `New Booking Request - ${serviceValue}`;
-  if (replyToEl) replyToEl.value = email;
+    if (!requestedService || !serviceSelect) {
+      return;
+    }
 
-  const message =
-    `Name: ${name}\n` +
-    `Email: ${email}\n` +
-    `Phone: ${phone}\n` +
-    `Date: ${date}\n` +
-    `Time: ${time}\n` +
-    `Service: ${serviceValue}\n\n` +
-    `--- Intake Answers ---\n${intakeAnswers}\n\n` +
-    `Additional Details: ${details}`;
+    const options = Array.from(serviceSelect.options);
 
-  if (msgEl) msgEl.value = message;
-}
+    const match = options.find(option => option.value === requestedService);
 
-function wireBookingSubmit() {
-  const form = $("bookingForm");
-  if (!form) return;
+    if (match) {
+      serviceSelect.value = requestedService;
+    }
+  }
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
+  function buildIntakeFields() {
+    if (!serviceSelect || !intakeFields || !intakeTitle) {
+      return;
+    }
 
-    if (!formBasicsOk()) return showFormStatus("Please complete all required booking fields.");
-    if (!intakeCompletedOk()) return showFormStatus("Please complete the Service Intake Questions before submitting the booking.");
+    const selectedService = serviceSelect.value;
+    const questions = intakeQuestions[selectedService] || [];
 
-    showFormStatus("Submitting…");
-    buildFormspreeHiddenFields();
-    form.submit();
-  });
-}
+    intakeTitle.textContent = `${selectedService} Intake Questions`;
+    intakeFields.innerHTML = "";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const bookingForm = $("bookingForm");
-  const serviceSelect = $("service");
+    questions.forEach((question, index) => {
+      const label = document.createElement("label");
+      label.setAttribute("for", `intakeQuestion${index}`);
+      label.textContent = question;
 
-  if (!bookingForm || !serviceSelect) return;
+      const textarea = document.createElement("textarea");
+      textarea.id = `intakeQuestion${index}`;
+      textarea.name = `intake_question_${index + 1}`;
+      textarea.rows = 3;
+      textarea.placeholder = "Type your answer here...";
+      textarea.required = true;
 
-  buildTimeOptions($("time"), 10, 20, 15);
-  setMinDate();
-  wireIntakeTab();
-  renderIntakeFields(serviceSelect.value);
+      intakeFields.appendChild(label);
+      intakeFields.appendChild(textarea);
+    });
 
-  serviceSelect.addEventListener("change", () => {
-    renderIntakeFields(serviceSelect.value);
-    updateSubmitEnabled();
-  });
+    intakeCompletedCheck.checked = false;
+    intakeCompletedHidden.value = "false";
+    intakeAnswersCompiled.value = "";
 
-  wireSaveIntake();
-  wireEnableChecks();
-  wireBookingSubmit();
-  updateSubmitEnabled();
+    if (intakeStatus) {
+      intakeStatus.style.display = "none";
+      intakeStatus.textContent = "";
+    }
+
+    updateSubmitButton();
+  }
+
+  function saveIntakeAnswers() {
+    const textareas = intakeFields.querySelectorAll("textarea");
+
+    let allAnswered = true;
+    const answers = [];
+
+    textareas.forEach((textarea, index) => {
+      const questionLabel = textarea.previousElementSibling
+        ? textarea.previousElementSibling.textContent
+        : `Question ${index + 1}`;
+
+      const answer = textarea.value.trim();
+
+      if (!answer) {
+        allAnswered = false;
+      }
+
+      answers.push(`${questionLabel}\n${answer}`);
+    });
+
+    if (!allAnswered) {
+      intakeStatus.textContent = "Please answer all intake questions before continuing.";
+      intakeStatus.style.display = "block";
+
+      intakeCompletedCheck.checked = false;
+      intakeCompletedHidden.value = "false";
+      intakeAnswersCompiled.value = "";
+
+      updateSubmitButton();
+      return;
+    }
+
+    intakeAnswersCompiled.value = answers.join("\n\n");
+    intakeCompletedCheck.checked = true;
+    intakeCompletedHidden.value = "true";
+
+    intakeStatus.textContent = "Intake answers saved.";
+    intakeStatus.style.display = "block";
+
+    updateSubmitButton();
+  }
+
+  function requiredFieldsComplete() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const date = document.getElementById("date").value.trim();
+    const time = document.getElementById("time").value.trim();
+    const service = document.getElementById("service").value.trim();
+
+    return Boolean(name && email && phone && date && time && service);
+  }
+
+  function updateSubmitButton() {
+    const intakeComplete = intakeCompletedHidden.value === "true";
+
+    if (requiredFieldsComplete() && intakeComplete) {
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  }
+
+  function saveBookingAndRedirect(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (!requiredFieldsComplete()) {
+      formStatus.textContent = "Please complete all required fields.";
+      formStatus.style.display = "block";
+      return;
+    }
+
+    if (intakeCompletedHidden.value !== "true") {
+      formStatus.textContent = "Please complete and save the intake questions before continuing.";
+      formStatus.style.display = "block";
+      return;
+    }
+
+    const bookingData = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      preferred_date: document.getElementById("date").value,
+      preferred_time: document.getElementById("time").value,
+      service: document.getElementById("service").value,
+      additional_details: document.getElementById("details").value.trim(),
+      intake_completed: intakeCompletedHidden.value,
+      intake_answers: intakeAnswersCompiled.value,
+      created_at: new Date().toISOString()
+    };
+
+    localStorage.setItem("weservices_booking", JSON.stringify(bookingData));
+
+    window.location.href = "pay.html";
+  }
+
+  populateTimes();
+  applyServiceFromUrl();
+  buildIntakeFields();
+  updateSubmitButton();
+
+  if (intakeToggleBtn && intakePanel) {
+    intakeToggleBtn.addEventListener("click", () => {
+      const isHidden = intakePanel.hidden;
+
+      intakePanel.hidden = !isHidden;
+      intakeToggleBtn.setAttribute("aria-expanded", String(isHidden));
+
+      if (isHidden) {
+        intakeToggleBtn.textContent = "Service Intake Questions (Click to Close)";
+      } else {
+        intakeToggleBtn.textContent = "Service Intake Questions (Click to Open)";
+      }
+    });
+  }
+
+  if (serviceSelect) {
+    serviceSelect.addEventListener("change", buildIntakeFields);
+  }
+
+  if (saveIntakeBtn) {
+    saveIntakeBtn.addEventListener("click", saveIntakeAnswers);
+  }
+
+  bookingForm.addEventListener("input", updateSubmitButton);
+  bookingForm.addEventListener("change", updateSubmitButton);
+  bookingForm.addEventListener("submit", saveBookingAndRedirect, true);
 });
